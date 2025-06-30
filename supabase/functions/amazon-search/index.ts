@@ -1,5 +1,4 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -10,24 +9,20 @@ const corsHeaders = {
 
 interface SearchRequest {
   preferences: {
-    style?: string[];
-    colors?: string[];
+    style: string[];
+    colors: string[];
     budget: string;
-    size?: string;
-    brands?: string[];
+    size: string;
+    brands: string[];
     age_range: string;
     gender: string;
-    weight: number;
-    height: number;
   };
   occasion: {
     occasion: string;
     season: string;
-    timeOfDay?: string;
-    formality?: string;
-    specificNeeds?: string;
-    activity_type?: string;
-    specific_needs?: string;
+    timeOfDay: string;
+    formality: string;
+    specificNeeds: string;
   };
 }
 
@@ -62,9 +57,6 @@ serve(async (req) => {
 
     const { preferences, occasion }: SearchRequest = await req.json();
 
-    console.log('Received preferences:', JSON.stringify(preferences, null, 2));
-    console.log('Received occasion:', JSON.stringify(occasion, null, 2));
-
     // Store search history
     await supabaseClient
       .from('search_history')
@@ -72,29 +64,20 @@ serve(async (req) => {
         user_id: user.id,
         occasion: occasion.occasion,
         season: occasion.season,
-        activity_type: occasion.activity_type || occasion.timeOfDay || '',
-        specific_needs: occasion.specific_needs || occasion.specificNeeds || '',
+        time_of_day: occasion.timeOfDay,
+        formality: occasion.formality,
+        specific_needs: occasion.specificNeeds,
         preferences: preferences,
       });
 
-    console.log('Generating AI-powered recommendations for:', { 
-      gender: preferences.gender, 
-      age: preferences.age_range, 
-      occasion: occasion.occasion,
-      weight: preferences.weight,
-      height: preferences.height
-    });
+    console.log('Generating products for:', { gender: preferences.gender, age: preferences.age_range, occasion: occasion.occasion });
     
-    // Use AI to determine size and generate search queries
-    const aiSize = await determineAISize(preferences);
-    const searchQueries = await generateAISearchQueries(preferences, occasion, aiSize);
-    const products = await fetchProductsFromQueries(searchQueries, aiSize);
+    const targetedProducts = generateTargetedProducts(preferences, occasion);
     
     return new Response(
       JSON.stringify({
-        products: products,
-        totalResults: products.length,
-        aiDeterminedSize: aiSize,
+        products: targetedProducts,
+        totalResults: targetedProducts.length,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -113,168 +96,154 @@ serve(async (req) => {
   }
 });
 
-async function determineAISize(preferences: any): Promise<string> {
-  const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+function generateTargetedProducts(preferences: any, occasion: any) {
+  const { gender, size, age_range } = preferences;
+  const { occasion: occ, season } = occasion;
   
-  if (!geminiApiKey) {
-    console.error('GEMINI_API_KEY not found');
-    return 'M'; // fallback
-  }
-
-  // Validate required data
-  if (!preferences.height || !preferences.weight || !preferences.age_range || !preferences.gender) {
-    console.log('Missing required data for size determination, using default size M');
-    return 'M';
-  }
-
-  const prompt = `You are a professional clothing size expert. Based on the following measurements and demographics, determine the most accurate clothing size using industry standards.
-
-Person Details:
-- Height: ${Math.floor(preferences.height / 12)} feet ${preferences.height % 12} inches (${preferences.height} total inches)
-- Weight: ${preferences.weight} pounds
-- Age: ${preferences.age_range} years old
-- Gender: ${preferences.gender}
-
-Please provide ONLY the size in this exact format based on gender and age:
-- For children under 18: "Boys XS", "Girls M", "Boys L", etc.
-- For adults: "Mens S", "Womens M", "Mens XL", etc.
-
-Consider industry sizing standards and body proportions for the given age group. Respond with ONLY the size, nothing else.`;
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      })
-    });
-
-    const data = await response.json();
-    const aiSize = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'M';
-    console.log('AI determined size:', aiSize);
-    return aiSize;
-  } catch (error) {
-    console.error('Error calling Gemini API for size:', error);
-    return 'M'; // fallback
-  }
-}
-
-async function generateAISearchQueries(preferences: any, occasion: any, size: string): Promise<string[]> {
-  const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+  const ageNum = parseInt(age_range);
+  const isMinor = ageNum < 18;
   
-  if (!geminiApiKey) {
-    console.error('GEMINI_API_KEY not found');
-    return ['clothing']; // fallback
-  }
-
-  const prompt = `You are an expert fashion stylist and e-commerce search specialist. Generate 5-8 specific Amazon search queries for clothing that would be perfect for this person and occasion.
-
-Person Profile:
-- Age: ${preferences.age_range || 'not specified'} years old
-- Gender: ${preferences.gender || 'not specified'}
-- Size: ${size}
-- Budget: ${preferences.budget || 'not specified'}
-- Preferred Brands: ${preferences.brands?.join(', ') || 'any'}
-- Style Preferences: ${preferences.style?.join(', ') || 'any'}
-- Colors: ${preferences.colors?.join(', ') || 'any'}
-
-Occasion Details:
-- Event: ${occasion.occasion || 'general'}
-- Season: ${occasion.season || 'any'}
-- Formality: ${occasion.formality || 'casual'}
-- Activity: ${occasion.activity_type || 'general'}
-- Specific Needs: ${occasion.specific_needs || occasion.specificNeeds || 'none'}
-
-Generate search queries that are:
-1. Specific enough to find relevant products
-2. Include appropriate keywords for the age group (kids vs adult clothing)
-3. Consider the occasion and season
-4. Include size when relevant
-5. Are formatted for Amazon search (use + instead of spaces)
-
-Provide 5-8 search queries, one per line, no numbering or bullets. Example format:
-mens+casual+button+shirt+medium
-womens+summer+dress+size+large
-boys+khaki+pants+size+10
-
-Respond with ONLY the search queries, nothing else.`;
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      })
-    });
-
-    const data = await response.json();
-    const aiQueries = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-    const queries = aiQueries.split('\n').filter(q => q.trim()).slice(0, 8);
-    console.log('AI generated search queries:', queries);
-    
-    if (queries.length === 0) {
-      console.log('No queries generated, using fallback');
-      return [`${preferences.gender || 'unisex'}+clothing+${size.toLowerCase().replace(' ', '+')}`];
+  console.log('Product generation params:', { gender, isMinor, occasion: occ });
+  
+  // Use working Amazon search URLs instead of direct product links
+  const searchTermsByCategory = {
+    // Boys clothing
+    boys: {
+      shirts: [
+        { searchTerm: 'boys+cotton+t-shirt', title: 'Boys Cotton T-Shirt', price: '$12.99' },
+        { searchTerm: 'boys+long+sleeve+shirt', title: 'Boys Long Sleeve Shirt', price: '$16.99' },
+        { searchTerm: 'boys+polo+shirt', title: 'Boys Polo Shirt', price: '$14.99' }
+      ],
+      pants: [
+        { searchTerm: 'boys+jeans', title: 'Boys Jeans', price: '$24.99' },
+        { searchTerm: 'boys+khaki+pants', title: 'Boys Khaki Pants', price: '$19.99' },
+        { searchTerm: 'boys+cargo+shorts', title: 'Boys Cargo Shorts', price: '$16.99' }
+      ],
+      outerwear: [
+        { searchTerm: 'boys+hoodie', title: 'Boys Hoodie', price: '$22.99' },
+        { searchTerm: 'boys+jacket', title: 'Boys Jacket', price: '$34.99' }
+      ]
+    },
+    // Girls clothing
+    girls: {
+      shirts: [
+        { searchTerm: 'girls+t-shirt', title: 'Girls T-Shirt', price: '$11.99' },
+        { searchTerm: 'girls+blouse', title: 'Girls Blouse', price: '$18.99' },
+        { searchTerm: 'girls+long+sleeve+top', title: 'Girls Long Sleeve Top', price: '$15.99' }
+      ],
+      pants: [
+        { searchTerm: 'girls+jeans', title: 'Girls Jeans', price: '$23.99' },
+        { searchTerm: 'girls+leggings', title: 'Girls Leggings', price: '$12.99' },
+        { searchTerm: 'girls+shorts', title: 'Girls Shorts', price: '$14.99' }
+      ],
+      dresses: [
+        { searchTerm: 'girls+casual+dress', title: 'Girls Casual Dress', price: '$19.99' },
+        { searchTerm: 'girls+party+dress', title: 'Girls Party Dress', price: '$28.99' }
+      ],
+      outerwear: [
+        { searchTerm: 'girls+cardigan', title: 'Girls Cardigan', price: '$21.99' },
+        { searchTerm: 'girls+jacket', title: 'Girls Jacket', price: '$32.99' }
+      ]
+    },
+    // Men's clothing
+    mens: {
+      shirts: [
+        { searchTerm: 'mens+dress+shirt', title: 'Men\'s Dress Shirt', price: '$29.99' },
+        { searchTerm: 'mens+t-shirt', title: 'Men\'s T-Shirt', price: '$15.99' },
+        { searchTerm: 'mens+polo+shirt', title: 'Men\'s Polo Shirt', price: '$24.99' }
+      ],
+      pants: [
+        { searchTerm: 'mens+jeans', title: 'Men\'s Jeans', price: '$39.99' },
+        { searchTerm: 'mens+dress+pants', title: 'Men\'s Dress Pants', price: '$34.99' },
+        { searchTerm: 'mens+chinos', title: 'Men\'s Chinos', price: '$28.99' }
+      ],
+      outerwear: [
+        { searchTerm: 'mens+button+shirt', title: 'Men\'s Button Shirt', price: '$32.99' },
+        { searchTerm: 'mens+jacket', title: 'Men\'s Jacket', price: '$49.99' }
+      ]
+    },
+    // Women's clothing
+    womens: {
+      shirts: [
+        { searchTerm: 'womens+blouse', title: 'Women\'s Blouse', price: '$26.99' },
+        { searchTerm: 'womens+t-shirt', title: 'Women\'s T-Shirt', price: '$18.99' },
+        { searchTerm: 'womens+long+sleeve+top', title: 'Women\'s Long Sleeve Top', price: '$22.99' }
+      ],
+      pants: [
+        { searchTerm: 'womens+jeans', title: 'Women\'s Jeans', price: '$34.99' },
+        { searchTerm: 'womens+dress+pants', title: 'Women\'s Dress Pants', price: '$29.99' },
+        { searchTerm: 'womens+leggings', title: 'Women\'s Leggings', price: '$19.99' }
+      ],
+      dresses: [
+        { searchTerm: 'womens+casual+dress', title: 'Women\'s Casual Dress', price: '$34.99' },
+        { searchTerm: 'womens+formal+dress', title: 'Women\'s Formal Dress', price: '$49.99' }
+      ],
+      outerwear: [
+        { searchTerm: 'womens+cardigan', title: 'Women\'s Cardigan', price: '$32.99' },
+        { searchTerm: 'womens+blazer', title: 'Women\'s Blazer', price: '$44.99' }
+      ]
     }
-    
-    return queries;
-  } catch (error) {
-    console.error('Error calling Gemini API for queries:', error);
-    return [`${preferences.gender || 'unisex'}+clothing+${size.toLowerCase().replace(' ', '+')}`]; // fallback
-  }
-}
+  };
 
-async function fetchProductsFromQueries(searchQueries: string[], size: string): Promise<any[]> {
+  // Determine gender category for product selection
+  let genderCategory = '';
+  if (isMinor) {
+    genderCategory = gender === 'boy' ? 'boys' : gender === 'girl' ? 'girls' : 'boys'; // Default to boys for unisex minors
+  } else {
+    genderCategory = gender === 'male' ? 'mens' : gender === 'female' ? 'womens' : 'mens'; // Default to mens for unisex adults
+  }
+
+  const categoryProducts = searchTermsByCategory[genderCategory];
   const products = [];
-  
-  // Generate realistic mock products based on the AI queries
-  for (let i = 0; i < Math.min(searchQueries.length, 6); i++) {
-    const query = searchQueries[i];
-    const product = {
-      id: `ai-${query}-${i}`,
-      title: formatQueryToTitle(query, size),
-      price: generateRealisticPrice(),
-      rating: 4.0 + Math.random(),
-      reviews: Math.floor(Math.random() * 1000) + 100,
-      image: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=300&h=300&fit=crop`,
-      url: `https://www.amazon.com/s?k=${query}&ref=sr_st_relevancerank`,
-      brand: generateBrandFromQuery(query),
-      description: `AI-recommended ${formatQueryToTitle(query, size).toLowerCase()} perfect for your style and occasion.`
-    };
-    products.push(product);
+
+  // Select appropriate items based on occasion and gender
+  if (occ.toLowerCase().includes('work') || occ.toLowerCase().includes('formal')) {
+    // Formal occasions
+    products.push(...categoryProducts.shirts.slice(0, 2));
+    products.push(...categoryProducts.pants.slice(0, 1));
+    if (categoryProducts.outerwear) {
+      products.push(categoryProducts.outerwear[1]); // More formal outerwear
+    }
+  } else if (occ.toLowerCase().includes('party') || occ.toLowerCase().includes('date')) {
+    // Party/social occasions
+    if (genderCategory === 'girls' || genderCategory === 'womens') {
+      products.push(...categoryProducts.dresses.slice(0, 1));
+      products.push(...categoryProducts.shirts.slice(0, 1));
+    } else {
+      products.push(...categoryProducts.shirts.slice(0, 2));
+    }
+    products.push(...categoryProducts.pants.slice(0, 1));
+  } else {
+    // Casual occasions
+    products.push(...categoryProducts.shirts.slice(0, 2));
+    products.push(...categoryProducts.pants.slice(0, 2));
+    if (categoryProducts.outerwear) {
+      products.push(categoryProducts.outerwear[0]);
+    }
   }
+
+  // Convert to final format with working Amazon search URLs
+  return products.map((product, index) => ({
+    id: `${product.searchTerm}-${index}`,
+    title: `${product.title} (${size})`,
+    price: product.price,
+    rating: 4.0 + Math.random(),
+    reviews: Math.floor(Math.random() * 1000) + 100,
+    image: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=300&h=300&fit=crop`,
+    url: `https://www.amazon.com/s?k=${product.searchTerm}+size+${size}&ref=sr_st_relevancerank`,
+    brand: getBrandForCategory(genderCategory),
+    description: `Perfect ${product.title.toLowerCase()} for ${genderCategory} size ${size}. Great for ${occ.toLowerCase()} occasions.`
+  }));
+}
+
+function getBrandForCategory(category: string): string {
+  const brands = {
+    boys: ['Carter\'s', 'Nike Kids', 'Adidas Kids'],
+    girls: ['Carter\'s', 'Disney', 'Justice'],
+    mens: ['Levi\'s', 'Nike', 'Adidas', 'Gap'],
+    womens: ['Levi\'s', 'Nike', 'Zara', 'H&M']
+  };
   
-  return products;
-}
-
-function formatQueryToTitle(query: string, size: string): string {
-  const words = query.replace(/\+/g, ' ').split(' ');
-  const formatted = words.map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  ).join(' ');
-  return `${formatted} (${size})`;
-}
-
-function generateRealisticPrice(): string {
-  const prices = ['$19.99', '$24.99', '$29.99', '$34.99', '$39.99', '$44.99', '$49.99', '$59.99', '$69.99', '$79.99'];
-  return prices[Math.floor(Math.random() * prices.length)];
-}
-
-function generateBrandFromQuery(query: string): string {
-  const brands = ['Nike', 'Adidas', 'Levi\'s', 'Gap', 'H&M', 'Zara', 'Uniqlo', 'Calvin Klein'];
-  return brands[Math.floor(Math.random() * brands.length)];
+  const categoryBrands = brands[category] || brands.mens;
+  return categoryBrands[Math.floor(Math.random() * categoryBrands.length)];
 }
