@@ -10,11 +10,11 @@ const corsHeaders = {
 
 interface SearchRequest {
   preferences: {
-    style: string[];
-    colors: string[];
+    style?: string[];
+    colors?: string[];
     budget: string;
-    size: string;
-    brands: string[];
+    size?: string;
+    brands?: string[];
     age_range: string;
     gender: string;
     weight: number;
@@ -23,9 +23,11 @@ interface SearchRequest {
   occasion: {
     occasion: string;
     season: string;
-    timeOfDay: string;
-    formality: string;
-    specificNeeds: string;
+    timeOfDay?: string;
+    formality?: string;
+    specificNeeds?: string;
+    activity_type?: string;
+    specific_needs?: string;
   };
 }
 
@@ -60,6 +62,9 @@ serve(async (req) => {
 
     const { preferences, occasion }: SearchRequest = await req.json();
 
+    console.log('Received preferences:', JSON.stringify(preferences, null, 2));
+    console.log('Received occasion:', JSON.stringify(occasion, null, 2));
+
     // Store search history
     await supabaseClient
       .from('search_history')
@@ -67,9 +72,8 @@ serve(async (req) => {
         user_id: user.id,
         occasion: occasion.occasion,
         season: occasion.season,
-        time_of_day: occasion.timeOfDay,
-        formality: occasion.formality,
-        specific_needs: occasion.specificNeeds,
+        activity_type: occasion.activity_type || occasion.timeOfDay || '',
+        specific_needs: occasion.specific_needs || occasion.specificNeeds || '',
         preferences: preferences,
       });
 
@@ -115,6 +119,12 @@ async function determineAISize(preferences: any): Promise<string> {
   if (!geminiApiKey) {
     console.error('GEMINI_API_KEY not found');
     return 'M'; // fallback
+  }
+
+  // Validate required data
+  if (!preferences.height || !preferences.weight || !preferences.age_range || !preferences.gender) {
+    console.log('Missing required data for size determination, using default size M');
+    return 'M';
   }
 
   const prompt = `You are a professional clothing size expert. Based on the following measurements and demographics, determine the most accurate clothing size using industry standards.
@@ -167,19 +177,20 @@ async function generateAISearchQueries(preferences: any, occasion: any, size: st
   const prompt = `You are an expert fashion stylist and e-commerce search specialist. Generate 5-8 specific Amazon search queries for clothing that would be perfect for this person and occasion.
 
 Person Profile:
-- Age: ${preferences.age_range} years old
-- Gender: ${preferences.gender}
+- Age: ${preferences.age_range || 'not specified'} years old
+- Gender: ${preferences.gender || 'not specified'}
 - Size: ${size}
-- Budget: ${preferences.budget}
+- Budget: ${preferences.budget || 'not specified'}
 - Preferred Brands: ${preferences.brands?.join(', ') || 'any'}
 - Style Preferences: ${preferences.style?.join(', ') || 'any'}
 - Colors: ${preferences.colors?.join(', ') || 'any'}
 
 Occasion Details:
-- Event: ${occasion.occasion}
-- Season: ${occasion.season}
-- Formality: ${occasion.formality}
-- Specific Needs: ${occasion.specificNeeds || 'none'}
+- Event: ${occasion.occasion || 'general'}
+- Season: ${occasion.season || 'any'}
+- Formality: ${occasion.formality || 'casual'}
+- Activity: ${occasion.activity_type || 'general'}
+- Specific Needs: ${occasion.specific_needs || occasion.specificNeeds || 'none'}
 
 Generate search queries that are:
 1. Specific enough to find relevant products
@@ -214,18 +225,23 @@ Respond with ONLY the search queries, nothing else.`;
     const aiQueries = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
     const queries = aiQueries.split('\n').filter(q => q.trim()).slice(0, 8);
     console.log('AI generated search queries:', queries);
-    return queries.length > 0 ? queries : ['clothing'];
+    
+    if (queries.length === 0) {
+      console.log('No queries generated, using fallback');
+      return [`${preferences.gender || 'unisex'}+clothing+${size.toLowerCase().replace(' ', '+')}`];
+    }
+    
+    return queries;
   } catch (error) {
     console.error('Error calling Gemini API for queries:', error);
-    return ['clothing']; // fallback
+    return [`${preferences.gender || 'unisex'}+clothing+${size.toLowerCase().replace(' ', '+')}`]; // fallback
   }
 }
 
 async function fetchProductsFromQueries(searchQueries: string[], size: string): Promise<any[]> {
   const products = [];
   
-  // For now, we'll generate mock products based on the AI queries
-  // In the future, this could integrate with RapidAPI for real Amazon data
+  // Generate realistic mock products based on the AI queries
   for (let i = 0; i < Math.min(searchQueries.length, 6); i++) {
     const query = searchQueries[i];
     const product = {
