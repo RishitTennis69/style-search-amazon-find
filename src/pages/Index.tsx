@@ -1,242 +1,232 @@
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Search, User, Calendar, ShoppingBag, LogOut } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import AgeGenderSelector from "@/components/AgeGenderSelector";
-import OutfitStyleSelector from "@/components/OutfitStyleSelector";
-import SimplifiedOccasionForm from "@/components/SimplifiedOccasionForm";
-import FashionResults from "@/components/FashionResults";
-import { UserPreferences, OccasionDetails } from "@/types/preferences";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, ArrowRight, ShirtIcon } from "lucide-react";
+import AgeGenderSelection from '@/components/AgeGenderSelection';
+import StyleSelection from '@/components/StyleSelection';
+import OccasionDetails from '@/components/OccasionDetails';
+import FashionResults from '@/components/FashionResults';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { UserPreferences, OccasionDetails as OccasionDetailsType } from '@/types/preferences';
+
+const steps = [
+  { id: 'welcome', title: 'Welcome', description: 'Your AI fashion journey starts here' },
+  { id: 'profile', title: 'Profile', description: 'Tell us about yourself' },
+  { id: 'style', title: 'Style', description: 'Discover your aesthetic' },
+  { id: 'occasion', title: 'Occasion', description: 'What\'s the event?' },
+  { id: 'results', title: 'Results', description: 'Your perfect matches' }
+];
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const [currentStep, setCurrentStep] = useState('welcome');
+  const [preferences, setPreferences] = useState<UserPreferences>({});
+  const [occasion, setOccasion] = useState<OccasionDetailsType>({});
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
-    age_range: '',
-    gender: '',
-    budget: '',
-    size: '',
-    brands: []
-  });
-  const [occasionDetails, setOccasionDetails] = useState<OccasionDetails>({
-    occasion: '',
-    season: '',
-    activity_type: '',
-    specific_needs: ''
-  });
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!user) {
       navigate('/auth');
     }
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-7 h-7 text-white animate-pulse" />
-          </div>
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const currentStepIndex = steps.findIndex(step => step.id === currentStep);
 
-  if (!user) {
-    return null;
-  }
-
-  const steps = [
-    { title: "Age & Gender", icon: User, description: "Tell us about yourself" },
-    { title: "Style Preferences", icon: Sparkles, description: "Choose your favorite looks" },
-    { title: "Occasion Details", icon: Calendar, description: "What's the occasion?" },
-    { title: "Find Your Look", icon: Search, description: "Discover perfect outfits" }
-  ];
-
-  const handleAgeGenderSubmit = (ageRange: string, gender: string) => {
-    setUserPreferences(prev => ({ ...prev, age_range: ageRange, gender }));
-    setCurrentStep(1);
+  const handleProfileComplete = (data: UserPreferences) => {
+    setPreferences(data);
+    setCurrentStep('style');
   };
 
-  const handleStyleSubmit = (selectedDescription: string, selectedImages: string[]) => {
-    setUserPreferences(prev => ({ 
-      ...prev, 
-      confirmed_style_description: selectedDescription,
-      selected_outfit_images: selectedImages
-    }));
-    setCurrentStep(2);
+  const handleStyleComplete = (data: UserPreferences) => {
+    setPreferences(prev => ({ ...prev, ...data }));
+    setCurrentStep('occasion');
   };
 
-  const handleOccasionSubmit = (details: OccasionDetails) => {
-    setOccasionDetails(details);
-    setCurrentStep(3);
+  const handleOccasionComplete = (data: OccasionDetailsType) => {
+    setOccasion(data);
+    setCurrentStep('results');
   };
 
-  const resetForm = () => {
-    setCurrentStep(0);
-    setUserPreferences({
-      age_range: '',
-      gender: '',
-      budget: '',
-      size: '',
-      brands: []
-    });
-    setOccasionDetails({
-      occasion: '',
-      season: '',
-      activity_type: '',
-      specific_needs: ''
-    });
+  const handleStartOver = () => {
+    setPreferences({});
+    setOccasion({});
+    setCurrentStep('welcome');
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
-  };
+  const progressPercentage = ((currentStepIndex + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <ShirtIcon className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-800">StyleFinder</h1>
-                <p className="text-sm text-slate-600">AI-Powered Fashion Discovery</p>
-              </div>
+              <h1 className="text-xl font-semibold text-slate-900">StyleAI</h1>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Progress Steps */}
-              <div className="hidden md:flex items-center space-x-4">
-                {steps.map((step, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all duration-300 ${
-                      index === currentStep 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : index < currentStep 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-slate-100 text-slate-400'
-                    }`}>
-                      <step.icon className="w-4 h-4" />
-                      <span className="text-sm font-medium">{step.title}</span>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <ArrowRight className="w-4 h-4 text-slate-300 ml-4" />
-                    )}
+            {currentStep !== 'welcome' && (
+              <div className="flex items-center space-x-4">
+                <div className="hidden sm:flex items-center space-x-2">
+                  <span className="text-sm text-slate-600">Step {currentStepIndex + 1} of {steps.length}</span>
+                  <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercentage}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                    />
                   </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleStartOver}
+                  className="text-slate-600 hover:text-slate-900"
+                >
+                  Start Over
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AnimatePresence mode="wait">
+          {currentStep === 'welcome' && (
+            <motion.div
+              key="welcome"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <div className="mb-8">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                >
+                  <Sparkles className="w-12 h-12 text-white" />
+                </motion.div>
+                
+                <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+                  Your Personal
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> AI Stylist</span>
+                </h1>
+                
+                <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+                  Discover your perfect style with AI-powered fashion recommendations tailored just for you
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6 mb-12">
+                {[
+                  { icon: "👤", title: "Personal Profile", desc: "Tell us your style preferences" },
+                  { icon: "✨", title: "AI Analysis", desc: "Our AI finds your perfect matches" },
+                  { icon: "🛍️", title: "Curated Results", desc: "Shop handpicked recommendations" }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+                  >
+                    <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                      <CardContent className="p-6 text-center">
+                        <div className="text-3xl mb-3">{item.icon}</div>
+                        <h3 className="font-semibold text-slate-900 mb-2">{item.title}</h3>
+                        <p className="text-sm text-slate-600">{item.desc}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
 
-              {/* User Menu */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">Welcome back!</span>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
                 <Button
-                  onClick={handleSignOut}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
+                  onClick={() => setCurrentStep('profile')}
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-lg font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+              </motion.div>
+            </motion.div>
+          )}
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {currentStep === 0 && (
-          <div className="space-y-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                Let's Get Started
-              </h2>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                First, tell us a bit about yourself so we can show you the most relevant style options.
-              </p>
-            </div>
-            <AgeGenderSelector onSubmit={handleAgeGenderSubmit} />
-          </div>
-        )}
+          {currentStep === 'profile' && (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <AgeGenderSelection onComplete={handleProfileComplete} />
+            </motion.div>
+          )}
 
-        {currentStep === 1 && (
-          <div className="space-y-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                Discover Your Style
-              </h2>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Choose the outfits you love, and our AI will understand your unique style preferences.
-              </p>
-            </div>
-            <OutfitStyleSelector 
-              ageRange={userPreferences.age_range}
-              gender={userPreferences.gender}
-              onSubmit={handleStyleSubmit}
-              onBack={() => setCurrentStep(0)}
-            />
-          </div>
-        )}
+          {currentStep === 'style' && (
+            <motion.div
+              key="style"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <StyleSelection 
+                preferences={preferences} 
+                onComplete={handleStyleComplete} 
+              />
+            </motion.div>
+          )}
 
-        {currentStep === 2 && (
-          <div className="space-y-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                What's the Occasion?
-              </h2>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Help us understand the context so we can recommend the most appropriate outfits.
-              </p>
-            </div>
-            <SimplifiedOccasionForm 
-              onSubmit={handleOccasionSubmit}
-              onBack={() => setCurrentStep(1)}
-            />
-          </div>
-        )}
+          {currentStep === 'occasion' && (
+            <motion.div
+              key="occasion"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <OccasionDetails onComplete={handleOccasionComplete} />
+            </motion.div>
+          )}
 
-        {currentStep === 3 && (
-          <div className="space-y-8">
-            <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                Your Perfect Matches
-              </h2>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Based on your style and occasion, here are curated outfit recommendations from Amazon.
-              </p>
-            </div>
-            <FashionResults 
-              preferences={userPreferences}
-              occasion={occasionDetails}
-              onStartOver={resetForm}
-            />
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="text-center text-slate-600">
-            <p className="flex items-center justify-center space-x-2">
-              <ShoppingBag className="w-4 h-4" />
-              <span>Powered by Amazon's fashion collection</span>
-            </p>
-          </div>
-        </div>
-      </footer>
+          {currentStep === 'results' && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <FashionResults 
+                preferences={preferences}
+                occasion={occasion}
+                onStartOver={handleStartOver}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
