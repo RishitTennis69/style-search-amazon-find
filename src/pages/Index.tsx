@@ -23,8 +23,19 @@ const steps = [
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState('welcome');
-  const [preferences, setPreferences] = useState<UserPreferences>({});
-  const [occasion, setOccasion] = useState<OccasionDetailsType>({});
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    age_range: '',
+    gender: '',
+    budget: '',
+    size: '',
+    brands: []
+  });
+  const [occasion, setOccasion] = useState<OccasionDetailsType>({
+    occasion: '',
+    season: '',
+    activity_type: '',
+    specific_needs: ''
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -52,8 +63,19 @@ const Index = () => {
   };
 
   const handleStartOver = () => {
-    setPreferences({});
-    setOccasion({});
+    setPreferences({
+      age_range: '',
+      gender: '',
+      budget: '',
+      size: '',
+      brands: []
+    });
+    setOccasion({
+      occasion: '',
+      season: '',
+      activity_type: '',
+      specific_needs: ''
+    });
     setCurrentStep('welcome');
   };
 

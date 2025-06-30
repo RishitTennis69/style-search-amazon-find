@@ -1,10 +1,10 @@
 
 export interface UserPreferences {
-  age_range: string;
-  gender: string;
-  budget: string;
-  size: string;
-  brands: string[];
+  age_range?: string;
+  gender?: string;
+  budget?: string;
+  size?: string;
+  brands?: string[];
   confirmed_style_description?: string;
   selected_outfit_images?: string[];
 }
