@@ -150,20 +150,6 @@ const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
           </motion.div>
         )}
 
-        {/* Indoor Notice */}
-        {occasion && isIndoorOccasion && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <span className="text-blue-700 font-medium">Indoor occasion - season doesn't matter! 🏢</span>
-            </div>
-          </motion.div>
-        )}
-
         {/* Specific Needs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

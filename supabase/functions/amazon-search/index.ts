@@ -105,82 +105,82 @@ function generateTargetedProducts(preferences: any, occasion: any) {
   
   console.log('Product generation params:', { gender, isMinor, occasion: occ });
   
-  // Real Amazon ASINs that actually work
-  const productsByCategory = {
+  // Use working Amazon search URLs instead of direct product links
+  const searchTermsByCategory = {
     // Boys clothing
     boys: {
       shirts: [
-        { asin: 'B07QR7X8VN', title: 'Boys Cotton T-Shirt', price: '$12.99' },
-        { asin: 'B08N5WRWNW', title: 'Boys Long Sleeve Shirt', price: '$16.99' },
-        { asin: 'B09Y4QRGVT', title: 'Boys Polo Shirt', price: '$14.99' }
+        { searchTerm: 'boys+cotton+t-shirt', title: 'Boys Cotton T-Shirt', price: '$12.99' },
+        { searchTerm: 'boys+long+sleeve+shirt', title: 'Boys Long Sleeve Shirt', price: '$16.99' },
+        { searchTerm: 'boys+polo+shirt', title: 'Boys Polo Shirt', price: '$14.99' }
       ],
       pants: [
-        { asin: 'B07MDXH7QK', title: 'Boys Jeans', price: '$24.99' },
-        { asin: 'B078GQLL3K', title: 'Boys Khaki Pants', price: '$19.99' },
-        { asin: 'B08XYZNHJT', title: 'Boys Cargo Shorts', price: '$16.99' }
+        { searchTerm: 'boys+jeans', title: 'Boys Jeans', price: '$24.99' },
+        { searchTerm: 'boys+khaki+pants', title: 'Boys Khaki Pants', price: '$19.99' },
+        { searchTerm: 'boys+cargo+shorts', title: 'Boys Cargo Shorts', price: '$16.99' }
       ],
       outerwear: [
-        { asin: 'B01AW5NKQQ', title: 'Boys Hoodie', price: '$22.99' },
-        { asin: 'B0B7QRNBXX', title: 'Boys Jacket', price: '$34.99' }
+        { searchTerm: 'boys+hoodie', title: 'Boys Hoodie', price: '$22.99' },
+        { searchTerm: 'boys+jacket', title: 'Boys Jacket', price: '$34.99' }
       ]
     },
     // Girls clothing
     girls: {
       shirts: [
-        { asin: 'B08X4YFTMQ', title: 'Girls T-Shirt', price: '$11.99' },
-        { asin: 'B09Z8HJKLM', title: 'Girls Blouse', price: '$18.99' },
-        { asin: 'B07P2CQRST', title: 'Girls Long Sleeve Top', price: '$15.99' }
+        { searchTerm: 'girls+t-shirt', title: 'Girls T-Shirt', price: '$11.99' },
+        { searchTerm: 'girls+blouse', title: 'Girls Blouse', price: '$18.99' },
+        { searchTerm: 'girls+long+sleeve+top', title: 'Girls Long Sleeve Top', price: '$15.99' }
       ],
       pants: [
-        { asin: 'B08Y3QWNHJ', title: 'Girls Jeans', price: '$23.99' },
-        { asin: 'B09F7KMNPQ', title: 'Girls Leggings', price: '$12.99' },
-        { asin: 'B07T8RVWXY', title: 'Girls Shorts', price: '$14.99' }
+        { searchTerm: 'girls+jeans', title: 'Girls Jeans', price: '$23.99' },
+        { searchTerm: 'girls+leggings', title: 'Girls Leggings', price: '$12.99' },
+        { searchTerm: 'girls+shorts', title: 'Girls Shorts', price: '$14.99' }
       ],
       dresses: [
-        { asin: 'B09K4LMQRS', title: 'Girls Casual Dress', price: '$19.99' },
-        { asin: 'B08V6YZABC', title: 'Girls Party Dress', price: '$28.99' }
+        { searchTerm: 'girls+casual+dress', title: 'Girls Casual Dress', price: '$19.99' },
+        { searchTerm: 'girls+party+dress', title: 'Girls Party Dress', price: '$28.99' }
       ],
       outerwear: [
-        { asin: 'B09H3JKTUV', title: 'Girls Cardigan', price: '$21.99' },
-        { asin: 'B08R5MWXYZ', title: 'Girls Jacket', price: '$32.99' }
+        { searchTerm: 'girls+cardigan', title: 'Girls Cardigan', price: '$21.99' },
+        { searchTerm: 'girls+jacket', title: 'Girls Jacket', price: '$32.99' }
       ]
     },
     // Men's clothing
     mens: {
       shirts: [
-        { asin: 'B07QFTYNQZ', title: 'Men\'s Dress Shirt', price: '$29.99' },
-        { asin: 'B08NCRVZXW', title: 'Men\'s T-Shirt', price: '$15.99' },
-        { asin: 'B09Y8QLMNP', title: 'Men\'s Polo Shirt', price: '$24.99' }
+        { searchTerm: 'mens+dress+shirt', title: 'Men\'s Dress Shirt', price: '$29.99' },
+        { searchTerm: 'mens+t-shirt', title: 'Men\'s T-Shirt', price: '$15.99' },
+        { searchTerm: 'mens+polo+shirt', title: 'Men\'s Polo Shirt', price: '$24.99' }
       ],
       pants: [
-        { asin: 'B078GQL13K', title: 'Men\'s Jeans', price: '$39.99' },
-        { asin: 'B07MDXQR5K', title: 'Men\'s Dress Pants', price: '$34.99' },
-        { asin: 'B08XYQR8JT', title: 'Men\'s Chinos', price: '$28.99' }
+        { searchTerm: 'mens+jeans', title: 'Men\'s Jeans', price: '$39.99' },
+        { searchTerm: 'mens+dress+pants', title: 'Men\'s Dress Pants', price: '$34.99' },
+        { searchTerm: 'mens+chinos', title: 'Men\'s Chinos', price: '$28.99' }
       ],
       outerwear: [
-        { asin: 'B01AWQR8QQ', title: 'Men\'s Button Shirt', price: '$32.99' },
-        { asin: 'B0B7QRN8XX', title: 'Men\'s Jacket', price: '$49.99' }
+        { searchTerm: 'mens+button+shirt', title: 'Men\'s Button Shirt', price: '$32.99' },
+        { searchTerm: 'mens+jacket', title: 'Men\'s Jacket', price: '$49.99' }
       ]
     },
     // Women's clothing
     womens: {
       shirts: [
-        { asin: 'B08X4YQRMQ', title: 'Women\'s Blouse', price: '$26.99' },
-        { asin: 'B09Z8HQLKM', title: 'Women\'s T-Shirt', price: '$18.99' },
-        { asin: 'B07P2CQRST', title: 'Women\'s Long Sleeve Top', price: '$22.99' }
+        { searchTerm: 'womens+blouse', title: 'Women\'s Blouse', price: '$26.99' },
+        { searchTerm: 'womens+t-shirt', title: 'Women\'s T-Shirt', price: '$18.99' },
+        { searchTerm: 'womens+long+sleeve+top', title: 'Women\'s Long Sleeve Top', price: '$22.99' }
       ],
       pants: [
-        { asin: 'B08Y3QRNHJ', title: 'Women\'s Jeans', price: '$34.99' },
-        { asin: 'B09F7KQNPQ', title: 'Women\'s Dress Pants', price: '$29.99' },
-        { asin: 'B07T8RVQXY', title: 'Women\'s Leggings', price: '$19.99' }
+        { searchTerm: 'womens+jeans', title: 'Women\'s Jeans', price: '$34.99' },
+        { searchTerm: 'womens+dress+pants', title: 'Women\'s Dress Pants', price: '$29.99' },
+        { searchTerm: 'womens+leggings', title: 'Women\'s Leggings', price: '$19.99' }
       ],
       dresses: [
-        { asin: 'B09K4LQRS', title: 'Women\'s Casual Dress', price: '$34.99' },
-        { asin: 'B08V6YQABC', title: 'Women\'s Formal Dress', price: '$49.99' }
+        { searchTerm: 'womens+casual+dress', title: 'Women\'s Casual Dress', price: '$34.99' },
+        { searchTerm: 'womens+formal+dress', title: 'Women\'s Formal Dress', price: '$49.99' }
       ],
       outerwear: [
-        { asin: 'B09H3JQTUV', title: 'Women\'s Cardigan', price: '$32.99' },
-        { asin: 'B08R5MQXYZ', title: 'Women\'s Blazer', price: '$44.99' }
+        { searchTerm: 'womens+cardigan', title: 'Women\'s Cardigan', price: '$32.99' },
+        { searchTerm: 'womens+blazer', title: 'Women\'s Blazer', price: '$44.99' }
       ]
     }
   };
@@ -193,7 +193,7 @@ function generateTargetedProducts(preferences: any, occasion: any) {
     genderCategory = gender === 'male' ? 'mens' : gender === 'female' ? 'womens' : 'mens'; // Default to mens for unisex adults
   }
 
-  const categoryProducts = productsByCategory[genderCategory];
+  const categoryProducts = searchTermsByCategory[genderCategory];
   const products = [];
 
   // Select appropriate items based on occasion and gender
@@ -222,15 +222,15 @@ function generateTargetedProducts(preferences: any, occasion: any) {
     }
   }
 
-  // Convert to final format with working Amazon URLs
+  // Convert to final format with working Amazon search URLs
   return products.map((product, index) => ({
-    id: `${product.asin}-${index}`,
+    id: `${product.searchTerm}-${index}`,
     title: `${product.title} (${size})`,
     price: product.price,
     rating: 4.0 + Math.random(),
     reviews: Math.floor(Math.random() * 1000) + 100,
     image: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=300&h=300&fit=crop`,
-    url: `https://www.amazon.com/dp/${product.asin}`,
+    url: `https://www.amazon.com/s?k=${product.searchTerm}+size+${size}&ref=sr_st_relevancerank`,
     brand: getBrandForCategory(genderCategory),
     description: `Perfect ${product.title.toLowerCase()} for ${genderCategory} size ${size}. Great for ${occ.toLowerCase()} occasions.`
   }));
