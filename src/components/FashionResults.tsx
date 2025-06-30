@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,6 @@ interface FashionResultsProps {
 const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -73,7 +71,6 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
       }
 
       setProducts(data.products || []);
-      setSearchQuery(data.searchQuery || '');
       
     } catch (error) {
       console.error('Error:', error);
@@ -154,6 +151,11 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
                   <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200">
                     {preferences.gender}
                   </Badge>
+                  {preferences.size && (
+                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 border-indigo-200">
+                      Size: {preferences.size}
+                    </Badge>
+                  )}
                 </div>
                 <div className="text-slate-700">
                   <span className="font-medium">Style:</span> {preferences.confirmed_style_description}
@@ -173,13 +175,6 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
                 </div>
               </div>
             </div>
-            {searchQuery && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-700">
-                  <span className="font-medium">Search Query:</span> {searchQuery}
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </motion.div>
