@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPreferences } from "@/types/preferences";
-import { ArrowRight, DollarSign, Scale, Ruler, Heart } from "lucide-react";
+import { ArrowRight, DollarSign, Scale, Ruler, Heart, Sparkles } from "lucide-react";
 
 interface StyleSelectionProps {
   preferences: UserPreferences;
@@ -40,222 +41,17 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
     );
   };
 
-  const calculateSize = (weightLbs: number, feet: number, inches: number, gender: string, age: number): string => {
-    const totalHeightInches = feet * 12 + inches;
-    
-    console.log('Size calculation:', { weightLbs, feet, inches, totalHeightInches, gender, age });
-    
-    const isMinor = age < 18;
-    
-    if (isMinor) {
-      // Children's sizes based on Legendary Whitetails guidelines
-      const prefix = gender === 'boy' ? 'Boys ' : 'Girls ';
-      
-      // Toddler sizes
-      if (totalHeightInches >= 33 && totalHeightInches <= 35.5 && weightLbs >= 27 && weightLbs <= 29.5) {
-        return prefix + '2T';
-      }
-      if (totalHeightInches >= 36 && totalHeightInches <= 38 && weightLbs >= 30 && weightLbs <= 33) {
-        return prefix + '3T';
-      }
-      if (totalHeightInches >= 38.5 && totalHeightInches <= 40.5 && weightLbs >= 34 && weightLbs <= 37) {
-        return prefix + '4T';
-      }
-      
-      // Kids sizes
-      if (totalHeightInches >= 39.5 && totalHeightInches <= 45.5 && weightLbs >= 34 && weightLbs <= 36) {
-        return prefix + 'XS (Size 4)';
-      }
-      if (totalHeightInches >= 45.5 && totalHeightInches <= 52 && weightLbs >= 47 && weightLbs <= 69) {
-        return prefix + 'S (Size 6-8)';
-      }
-      if (totalHeightInches >= 54 && totalHeightInches <= 58.5 && weightLbs >= 70 && weightLbs <= 94) {
-        return prefix + 'M (Size 10-12)';
-      }
-      if (totalHeightInches >= 60 && totalHeightInches <= 63.5 && weightLbs >= 95 && weightLbs <= 120) {
-        return prefix + 'L (Size 14-16)';
-      }
-      
-      // After Large, transition to adult sizes
-      if (totalHeightInches > 63.5 || weightLbs > 120) {
-        // Switch to adult sizing
-        if (gender === 'boy') {
-          return calculateAdultMaleSize(weightLbs, totalHeightInches);
-        } else {
-          return calculateAdultFemaleSize(weightLbs, totalHeightInches);
-        }
-      }
-      
-      // Fallback for out-of-range kids
-      if (totalHeightInches < 39.5) return prefix + '2T';
-      if (totalHeightInches < 45.5) return prefix + 'XS (Size 4)';
-      if (totalHeightInches < 54) return prefix + 'S (Size 6-8)';
-      if (totalHeightInches < 60) return prefix + 'M (Size 10-12)';
-      return prefix + 'L (Size 14-16)';
-    }
-    
-    // Adult sizes
-    if (gender === 'male') {
-      return calculateAdultMaleSize(weightLbs, totalHeightInches);
-    } else {
-      return calculateAdultFemaleSize(weightLbs, totalHeightInches);
-    }
-  };
-
-  const calculateAdultMaleSize = (weightLbs: number, totalHeightInches: number): string => {
-    // Men's sizes based on Men Fashion American Slim Fit
-    if (totalHeightInches === 65) { // 5'5"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 170) return 'Mens M';
-      return 'Mens M';
-    }
-    if (totalHeightInches === 66) { // 5'6"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 170) return 'Mens M';
-      if (weightLbs >= 170 && weightLbs < 180) return 'Mens L';
-      return 'Mens L';
-    }
-    if (totalHeightInches === 67) { // 5'7"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 170) return 'Mens M';
-      if (weightLbs >= 170 && weightLbs < 190) return 'Mens L';
-      return 'Mens L';
-    }
-    if (totalHeightInches === 68) { // 5'8"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 170) return 'Mens M';
-      if (weightLbs >= 170 && weightLbs < 190) return 'Mens L';
-      if (weightLbs >= 190 && weightLbs < 200) return 'Mens XL';
-      return 'Mens XL';
-    }
-    if (totalHeightInches === 69) { // 5'9"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 180) return 'Mens M';
-      if (weightLbs >= 180 && weightLbs < 190) return 'Mens L';
-      if (weightLbs >= 190 && weightLbs < 200) return 'Mens XL';
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens 2XL';
-      return 'Mens 2XL';
-    }
-    if (totalHeightInches === 70) { // 5'10"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 180) return 'Mens M';
-      if (weightLbs >= 180 && weightLbs < 200) return 'Mens L';
-      if (weightLbs >= 200 && weightLbs < 220) return 'Mens 2XL';
-      return 'Mens 2XL';
-    }
-    if (totalHeightInches === 71) { // 5'11"
-      if (weightLbs >= 130 && weightLbs < 150) return 'Mens XS';
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 180) return 'Mens M';
-      if (weightLbs >= 180 && weightLbs < 200) return 'Mens L';
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens XL';
-      if (weightLbs >= 210 && weightLbs < 220) return 'Mens 2XL';
-      if (weightLbs >= 220 && weightLbs < 240) return 'Mens 3XL';
-      return 'Mens 3XL';
-    }
-    if (totalHeightInches === 72) { // 6'0"
-      if (weightLbs >= 150 && weightLbs < 160) return 'Mens S';
-      if (weightLbs >= 160 && weightLbs < 180) return 'Mens M';
-      if (weightLbs >= 180 && weightLbs < 200) return 'Mens L';
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens XL';
-      if (weightLbs >= 210 && weightLbs < 220) return 'Mens 2XL';
-      if (weightLbs >= 220 && weightLbs < 240) return 'Mens 3XL';
-      if (weightLbs >= 240 && weightLbs < 270) return 'Mens 4XL';
-      return 'Mens 4XL';
-    }
-    if (totalHeightInches === 73) { // 6'1"
-      if (weightLbs >= 160 && weightLbs < 180) return 'Mens M';
-      if (weightLbs >= 180 && weightLbs < 200) return 'Mens L';
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens XL';
-      if (weightLbs >= 210 && weightLbs < 220) return 'Mens 2XL';
-      if (weightLbs >= 220 && weightLbs < 240) return 'Mens 3XL';
-      if (weightLbs >= 240 && weightLbs < 270) return 'Mens 4XL';
-      if (weightLbs >= 270 && weightLbs < 300) return 'Mens 5XL';
-      return 'Mens 5XL';
-    }
-    if (totalHeightInches === 74) { // 6'2"
-      if (weightLbs >= 170 && weightLbs < 180) return 'Mens M/L';
-      if (weightLbs >= 180 && weightLbs < 200) return 'Mens L';
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens XL';
-      if (weightLbs >= 210 && weightLbs < 220) return 'Mens 2XL';
-      if (weightLbs >= 220 && weightLbs < 240) return 'Mens 3XL';
-      if (weightLbs >= 240 && weightLbs < 270) return 'Mens 4XL';
-      if (weightLbs >= 270 && weightLbs < 300) return 'Mens 5XL';
-      if (weightLbs >= 300 && weightLbs < 340) return 'Mens 6XL';
-      return 'Mens 6XL';
-    }
-    if (totalHeightInches >= 75) { // 6'3" and above
-      if (weightLbs >= 200 && weightLbs < 210) return 'Mens XL';
-      if (weightLbs >= 210 && weightLbs < 240) return 'Mens 2XL';
-      if (weightLbs >= 240 && weightLbs < 270) return 'Mens 3XL';
-      if (weightLbs >= 270 && weightLbs < 300) return 'Mens 4XL';
-      if (weightLbs >= 300 && weightLbs < 340) return 'Mens 5XL';
-      return 'Mens 5XL';
-    }
-    
-    // Fallback for shorter men
-    if (weightLbs < 150) return 'Mens XS';
-    if (weightLbs < 170) return 'Mens S';
-    if (weightLbs < 190) return 'Mens M';
-    return 'Mens L';
-  };
-
-  const calculateAdultFemaleSize = (weightLbs: number, totalHeightInches: number): string => {
-    // Women's sizes based on Edee's Place guidelines
-    if (totalHeightInches >= 59 && totalHeightInches <= 64 && weightLbs >= 95 && weightLbs <= 115) {
-      return 'Womens S';
-    }
-    if (totalHeightInches >= 62 && totalHeightInches <= 67 && weightLbs >= 115 && weightLbs <= 135) {
-      return 'Womens M';
-    }
-    if (totalHeightInches >= 64 && totalHeightInches <= 69 && weightLbs >= 135 && weightLbs <= 155) {
-      return 'Womens L';
-    }
-    if (totalHeightInches >= 66 && totalHeightInches <= 71 && weightLbs >= 150 && weightLbs <= 175) {
-      return 'Womens XL';
-    }
-    
-    // Jerry's brand guidelines as fallback
-    if (totalHeightInches >= 59 && totalHeightInches <= 63 && weightLbs >= 90 && weightLbs <= 105) {
-      return 'Womens S';
-    }
-    if (totalHeightInches >= 63 && totalHeightInches <= 66 && weightLbs >= 100 && weightLbs <= 125) {
-      return 'Womens M';
-    }
-    if (totalHeightInches >= 65 && totalHeightInches <= 69 && weightLbs >= 120 && weightLbs <= 135) {
-      return 'Womens L';
-    }
-    if (totalHeightInches >= 65 && totalHeightInches <= 72 && weightLbs >= 135 && weightLbs <= 160) {
-      return 'Womens XL';
-    }
-    
-    // General fallback based on weight ranges
-    if (weightLbs < 100) return 'Womens XS';
-    if (weightLbs < 120) return 'Womens S';
-    if (weightLbs < 140) return 'Womens M';
-    if (weightLbs < 160) return 'Womens L';
-    if (weightLbs < 180) return 'Womens XL';
-    return 'Womens XXL';
-  };
-
   const weightNum = parseFloat(weight);
   const feetNum = parseFloat(feet);
   const inchesNum = parseFloat(inches);
-  const calculatedSize = (weightNum > 0 && feetNum > 0 && inchesNum >= 0) ? 
-    calculateSize(weightNum, feetNum, inchesNum, preferences.gender || '', parseInt(preferences.age_range || '0')) : '';
+  const hasValidMeasurements = weightNum > 0 && feetNum > 0 && inchesNum >= 0;
 
   const handleContinue = () => {
-    if (budget && weightNum > 0 && feetNum > 0 && inchesNum >= 0) {
+    if (budget && hasValidMeasurements) {
       onComplete({
         ...preferences,
         budget,
-        size: calculatedSize,
+        size: 'AI-determined', // Placeholder - AI will determine actual size
         brands,
         weight: weightNum,
         height: feetNum * 12 + inchesNum // Store total height in inches
@@ -263,7 +59,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
     }
   };
 
-  const canContinue = budget && weightNum > 0 && feetNum > 0 && inchesNum >= 0;
+  const canContinue = budget && hasValidMeasurements;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -333,7 +129,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
                 <Ruler className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-xl text-slate-900">Your measurements</CardTitle>
-              <p className="text-sm text-slate-600 mt-2">We'll calculate your size automatically using industry standards</p>
+              <p className="text-sm text-slate-600 mt-2">Our AI will determine your perfect size using professional sizing standards</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-lg mx-auto">
@@ -383,16 +179,16 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
                   />
                 </div>
               </div>
-              {calculatedSize && (
+              {hasValidMeasurements && (
                 <motion.div 
                   className="mt-6 text-center"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <Scale className="w-4 h-4 text-blue-600 mr-2" />
-                    <span className="text-blue-700 font-medium">Your calculated size: {calculatedSize}</span>
+                  <div className="inline-flex items-center px-4 py-2 bg-purple-50 border border-purple-200 rounded-lg">
+                    <Sparkles className="w-4 h-4 text-purple-600 mr-2" />
+                    <span className="text-purple-700 font-medium">AI will determine your perfect size</span>
                   </div>
                 </motion.div>
               )}
