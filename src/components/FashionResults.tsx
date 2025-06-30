@@ -85,6 +85,14 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
     }
   };
 
+  const handleProductClick = (product: Product) => {
+    // Track click event
+    console.log('Product clicked:', product.title, product.url);
+    
+    // Open Amazon product page in new tab
+    window.open(product.url, '_blank', 'noopener,noreferrer');
+  };
+
   const ProductSkeleton = () => (
     <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
       <CardContent className="p-4">
@@ -144,29 +152,32 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
               <ProductSkeleton key={index} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <Card key={product.id} className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group">
                 <CardContent className="p-0">
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     <img
                       src={product.image}
                       alt={product.title}
-                      className="w-full h-48 object-cover rounded-t-lg"
+                      className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
                     />
                     <Badge className="absolute top-2 right-2 bg-white/90 text-slate-700">
                       {product.brand}
                     </Badge>
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <ExternalLink className="w-8 h-8 text-white" />
+                    </div>
                   </div>
                   
                   <div className="p-4 space-y-3">
-                    <h4 className="font-semibold text-slate-800 line-clamp-2 min-h-[3rem]">
+                    <h4 className="font-semibold text-slate-800 line-clamp-2 min-h-[3rem] group-hover:text-blue-600 transition-colors">
                       {product.title}
                     </h4>
                     
@@ -177,7 +188,7 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm text-slate-600">
-                          {product.rating} ({product.reviews})
+                          {product.rating.toFixed(1)} ({product.reviews})
                         </span>
                       </div>
                     </div>
@@ -188,7 +199,10 @@ const FashionResults = ({ preferences, occasion, onStartOver }: FashionResultsPr
                     
                     <Button
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                      onClick={() => window.open(product.url, '_blank')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProductClick(product);
+                      }}
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       View on Amazon
