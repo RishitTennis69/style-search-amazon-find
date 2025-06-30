@@ -1,12 +1,183 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, ArrowRight, Search, User, Calendar, ShoppingBag } from "lucide-react";
+import StylePreferences from "@/components/StylePreferences";
+import OccasionForm from "@/components/OccasionForm";
+import FashionResults from "@/components/FashionResults";
+
+export interface UserPreferences {
+  style: string[];
+  colors: string[];
+  budget: string;
+  size: string;
+  brands: string[];
+}
+
+export interface OccasionDetails {
+  occasion: string;
+  season: string;
+  timeOfDay: string;
+  formality: string;
+  specificNeeds: string;
+}
 
 const Index = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    style: [],
+    colors: [],
+    budget: '',
+    size: '',
+    brands: []
+  });
+  const [occasionDetails, setOccasionDetails] = useState<OccasionDetails>({
+    occasion: '',
+    season: '',
+    timeOfDay: '',
+    formality: '',
+    specificNeeds: ''
+  });
+
+  const steps = [
+    { title: "Style Preferences", icon: User, description: "Tell us about your fashion taste" },
+    { title: "Occasion Details", icon: Calendar, description: "What's the occasion today?" },
+    { title: "Find Your Look", icon: Search, description: "Discover perfect outfits" }
+  ];
+
+  const handleStyleSubmit = (preferences: UserPreferences) => {
+    setUserPreferences(preferences);
+    setCurrentStep(1);
+  };
+
+  const handleOccasionSubmit = (details: OccasionDetails) => {
+    setOccasionDetails(details);
+    setCurrentStep(2);
+  };
+
+  const resetForm = () => {
+    setCurrentStep(0);
+    setUserPreferences({
+      style: [],
+      colors: [],
+      budget: '',
+      size: '',
+      brands: []
+    });
+    setOccasionDetails({
+      occasion: '',
+      season: '',
+      timeOfDay: '',
+      formality: '',
+      specificNeeds: ''
+    });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">StyleFinder</h1>
+                <p className="text-sm text-slate-600">AI-Powered Fashion Discovery</p>
+              </div>
+            </div>
+            
+            {/* Progress Steps */}
+            <div className="hidden md:flex items-center space-x-4">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-center">
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all duration-300 ${
+                    index === currentStep 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : index < currentStep 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    <step.icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{step.title}</span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <ArrowRight className="w-4 h-4 text-slate-300 ml-4" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {currentStep === 0 && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">
+                Discover Your Perfect Style
+              </h2>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                Tell us about your fashion preferences, and we'll help you find the perfect outfit from Amazon's vast collection.
+              </p>
+            </div>
+            <StylePreferences onSubmit={handleStyleSubmit} />
+          </div>
+        )}
+
+        {currentStep === 1 && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">
+                What's the Occasion?
+              </h2>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                Help us understand the context so we can recommend the most appropriate outfits.
+              </p>
+            </div>
+            <OccasionForm 
+              onSubmit={handleOccasionSubmit}
+              onBack={() => setCurrentStep(0)}
+            />
+          </div>
+        )}
+
+        {currentStep === 2 && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">
+                Your Perfect Matches
+              </h2>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                Based on your preferences, here are curated outfit recommendations from Amazon.
+              </p>
+            </div>
+            <FashionResults 
+              preferences={userPreferences}
+              occasion={occasionDetails}
+              onStartOver={resetForm}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-slate-200 mt-16">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center text-slate-600">
+            <p className="flex items-center justify-center space-x-2">
+              <ShoppingBag className="w-4 h-4" />
+              <span>Powered by Amazon's fashion collection</span>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
