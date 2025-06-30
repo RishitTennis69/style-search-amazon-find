@@ -7,6 +7,7 @@ export interface UserPreferences {
   weight?: number;
   height?: number;
   brands?: string[];
+  colors?: string[];
   confirmed_style_description?: string;
   selected_outfit_images?: string[];
 }

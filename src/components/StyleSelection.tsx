@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPreferences } from "@/types/preferences";
-import { ArrowRight, DollarSign, Scale, Ruler, Heart } from "lucide-react";
+import { ArrowRight, DollarSign, Scale, Ruler, Heart, Palette } from "lucide-react";
 
 interface StyleSelectionProps {
   preferences: UserPreferences;
@@ -19,6 +18,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
   const [feet, setFeet] = useState<string>('');
   const [inches, setInches] = useState<string>('');
   const [brands, setBrands] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>([]);
 
   const budgetOptions = [
     { value: 'under-50', label: 'Under $50', emoji: '💰' },
@@ -26,6 +26,21 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
     { value: '100-200', label: '$100 - $200', emoji: '💎' },
     { value: '200-500', label: '$200 - $500', emoji: '👑' },
     { value: 'over-500', label: 'Over $500', emoji: '✨' }
+  ];
+
+  const colorOptions = [
+    { value: 'black', label: 'Black', color: '#000000' },
+    { value: 'white', label: 'White', color: '#FFFFFF' },
+    { value: 'navy', label: 'Navy', color: '#001f3f' },
+    { value: 'gray', label: 'Gray', color: '#808080' },
+    { value: 'blue', label: 'Blue', color: '#0074D9' },
+    { value: 'red', label: 'Red', color: '#FF4136' },
+    { value: 'green', label: 'Green', color: '#2ECC40' },
+    { value: 'brown', label: 'Brown', color: '#8B4513' },
+    { value: 'beige', label: 'Beige', color: '#F5F5DC' },
+    { value: 'pink', label: 'Pink', color: '#FF69B4' },
+    { value: 'purple', label: 'Purple', color: '#B10DC9' },
+    { value: 'yellow', label: 'Yellow', color: '#FFDC00' }
   ];
 
   const popularBrands = [
@@ -38,6 +53,14 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
       prev.includes(brand) 
         ? prev.filter(b => b !== brand)
         : [...prev, brand]
+    );
+  };
+
+  const handleColorToggle = (color: string) => {
+    setColors(prev => 
+      prev.includes(color) 
+        ? prev.filter(c => c !== color)
+        : [...prev, color]
     );
   };
 
@@ -104,99 +127,95 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
   };
 
   const calculateAdultMaleSize = (weightLbs: number, totalHeightInches: number): string => {
-    // Improved Men's sizes with better weight distribution
-    
     // Very light weights - always XS or S regardless of height
-    if (weightLbs < 120) return 'Mens XS';
-    if (weightLbs < 140) return 'Mens S';
+    if (weightLbs < 110) return 'Mens XS';
+    if (weightLbs < 130) return 'Mens S';
     
     // Height-based calculations for normal weight ranges
     if (totalHeightInches <= 66) { // 5'6" and under
-      if (weightLbs < 150) return 'Mens S';
-      if (weightLbs < 170) return 'Mens M';
-      if (weightLbs < 190) return 'Mens L';
+      if (weightLbs < 140) return 'Mens S';
+      if (weightLbs < 160) return 'Mens M';
+      if (weightLbs < 180) return 'Mens L';
       return 'Mens XL';
     }
     
     if (totalHeightInches <= 68) { // 5'7" - 5'8"
-      if (weightLbs < 160) return 'Mens S';
-      if (weightLbs < 180) return 'Mens M';
-      if (weightLbs < 200) return 'Mens L';
-      if (weightLbs < 220) return 'Mens XL';
+      if (weightLbs < 150) return 'Mens S';
+      if (weightLbs < 170) return 'Mens M';
+      if (weightLbs < 190) return 'Mens L';
+      if (weightLbs < 210) return 'Mens XL';
       return 'Mens 2XL';
     }
     
     if (totalHeightInches <= 70) { // 5'9" - 5'10"
-      if (weightLbs < 160) return 'Mens S';
-      if (weightLbs < 180) return 'Mens M';
-      if (weightLbs < 200) return 'Mens L';
-      if (weightLbs < 230) return 'Mens XL';
+      if (weightLbs < 150) return 'Mens S';
+      if (weightLbs < 170) return 'Mens M';
+      if (weightLbs < 190) return 'Mens L';
+      if (weightLbs < 220) return 'Mens XL';
       return 'Mens 2XL';
     }
     
     if (totalHeightInches <= 72) { // 5'11" - 6'0"
-      if (weightLbs < 170) return 'Mens M';
-      if (weightLbs < 190) return 'Mens L';
-      if (weightLbs < 220) return 'Mens XL';
-      if (weightLbs < 250) return 'Mens 2XL';
+      if (weightLbs < 160) return 'Mens M';
+      if (weightLbs < 180) return 'Mens L';
+      if (weightLbs < 210) return 'Mens XL';
+      if (weightLbs < 240) return 'Mens 2XL';
       return 'Mens 3XL';
     }
     
     if (totalHeightInches <= 74) { // 6'1" - 6'2"
-      if (weightLbs < 180) return 'Mens M';
-      if (weightLbs < 200) return 'Mens L';
-      if (weightLbs < 230) return 'Mens XL';
-      if (weightLbs < 260) return 'Mens 2XL';
-      if (weightLbs < 290) return 'Mens 3XL';
+      if (weightLbs < 170) return 'Mens M';
+      if (weightLbs < 190) return 'Mens L';
+      if (weightLbs < 220) return 'Mens XL';
+      if (weightLbs < 250) return 'Mens 2XL';
+      if (weightLbs < 280) return 'Mens 3XL';
       return 'Mens 4XL';
     }
     
     // 6'3" and above
-    if (weightLbs < 190) return 'Mens L';
-    if (weightLbs < 220) return 'Mens XL';
-    if (weightLbs < 250) return 'Mens 2XL';
-    if (weightLbs < 280) return 'Mens 3XL';
-    if (weightLbs < 320) return 'Mens 4XL';
+    if (weightLbs < 180) return 'Mens L';
+    if (weightLbs < 210) return 'Mens XL';
+    if (weightLbs < 240) return 'Mens 2XL';
+    if (weightLbs < 270) return 'Mens 3XL';
+    if (weightLbs < 310) return 'Mens 4XL';
     return 'Mens 5XL';
   };
 
   const calculateAdultFemaleSize = (weightLbs: number, totalHeightInches: number): string => {
-    // Improved Women's sizes with better weight distribution
-    
     // Very light weights - always XS or S
-    if (weightLbs < 100) return 'Womens XS';
-    if (weightLbs < 115) return 'Womens S';
+    if (weightLbs < 90) return 'Womens XS';
+    if (weightLbs < 105) return 'Womens S';
     
     // Height-based calculations for normal weight ranges
     if (totalHeightInches <= 62) { // 5'2" and under
+      if (weightLbs < 115) return 'Womens S';
+      if (weightLbs < 130) return 'Womens M';
+      if (weightLbs < 150) return 'Womens L';
+      if (weightLbs < 170) return 'Womens XL';
+      return 'Womens XXL';
+    }
+    
+    if (totalHeightInches <= 65) { // 5'3" - 5'5"
       if (weightLbs < 120) return 'Womens S';
+      if (weightLbs < 135) return 'Womens M';
+      if (weightLbs < 155) return 'Womens L';
+      if (weightLbs < 175) return 'Womens XL';
+      return 'Womens XXL';
+    }
+    
+    if (totalHeightInches <= 68) { // 5'6" - 5'8"
+      if (weightLbs < 125) return 'Womens S';
       if (weightLbs < 140) return 'Womens M';
       if (weightLbs < 160) return 'Womens L';
       if (weightLbs < 180) return 'Womens XL';
       return 'Womens XXL';
     }
     
-    if (totalHeightInches <= 65) { // 5'3" - 5'5"
-      if (weightLbs < 125) return 'Womens S';
-      if (weightLbs < 145) return 'Womens M';
-      if (weightLbs < 165) return 'Womens L';
-      if (weightLbs < 185) return 'Womens XL';
-      return 'Womens XXL';
-    }
-    
-    if (totalHeightInches <= 68) { // 5'6" - 5'8"
-      if (weightLbs < 130) return 'Womens S';
-      if (weightLbs < 150) return 'Womens M';
-      if (weightLbs < 170) return 'Womens L';
-      if (weightLbs < 190) return 'Womens XL';
-      return 'Womens XXL';
-    }
-    
     // 5'9" and above
-    if (weightLbs < 135) return 'Womens S';
-    if (weightLbs < 155) return 'Womens M';
-    if (weightLbs < 175) return 'Womens L';
-    if (weightLbs < 195) return 'Womens XL';
+    if (weightLbs < 130) return 'Womens S';
+    if (weightLbs < 145) return 'Womens M';
+    if (weightLbs < 165) return 'Womens L';
+    if (weightLbs < 185) return 'Womens XL';
     return 'Womens XXL';
   };
 
@@ -213,6 +232,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
         budget,
         size: calculatedSize,
         brands,
+        colors,
         weight: weightNum,
         height: feetNum * 12 + inchesNum // Store total height in inches
       });
@@ -230,7 +250,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
         className="text-center mb-12"
       >
         <h2 className="text-3xl font-bold text-slate-900 mb-4">Style Preferences</h2>
-        <p className="text-lg text-slate-600">Help us find your perfect fit and budget</p>
+        <p className="text-lg text-slate-600">Help us find your perfect fit, budget, and style</p>
       </motion.div>
 
       <div className="space-y-8">
@@ -356,11 +376,57 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
           </Card>
         </motion.div>
 
+        {/* Color Preferences */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Palette className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle className="text-xl text-slate-900">Favorite colors?</CardTitle>
+              <p className="text-sm text-slate-600 mt-2">Select colors you love to wear</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                {colorOptions.map((color, index) => (
+                  <motion.div
+                    key={color.value}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6 + index * 0.03, duration: 0.3 }}
+                  >
+                    <Card 
+                      className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+                        colors.includes(color.value) 
+                          ? 'ring-2 ring-pink-500 bg-pink-50 border-pink-200' 
+                          : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                      }`}
+                      onClick={() => handleColorToggle(color.value)}
+                    >
+                      <CardContent className="p-3 text-center">
+                        <div 
+                          className={`w-8 h-8 rounded-full mx-auto mb-2 ${color.value === 'white' ? 'border border-slate-300' : ''}`}
+                          style={{ backgroundColor: color.color }}
+                        />
+                        <div className="font-medium text-slate-900 text-xs">{color.label}</div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Brand Preferences */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
         >
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
@@ -377,7 +443,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
                     key={brand}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.7 + index * 0.03, duration: 0.3 }}
+                    transition={{ delay: 0.8 + index * 0.03, duration: 0.3 }}
                   >
                     <Card 
                       className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
@@ -404,7 +470,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
         className="flex justify-center mt-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
       >
         <Button
           onClick={handleContinue}
