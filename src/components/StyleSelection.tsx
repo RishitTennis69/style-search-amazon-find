@@ -16,15 +16,16 @@ interface StyleSelectionProps {
 const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
   const [budget, setBudget] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
-  const [height, setHeight] = useState<string>('');
+  const [feet, setFeet] = useState<string>('');
+  const [inches, setInches] = useState<string>('');
   const [brands, setBrands] = useState<string[]>([]);
 
   const budgetOptions = [
-    { value: 'under-50', label: 'Under $50', description: 'Per complete outfit', emoji: '💰' },
-    { value: '50-100', label: '$50 - $100', description: 'Per complete outfit', emoji: '💳' },
-    { value: '100-200', label: '$100 - $200', description: 'Per complete outfit', emoji: '💎' },
-    { value: '200-500', label: '$200 - $500', description: 'Per complete outfit', emoji: '👑' },
-    { value: 'over-500', label: 'Over $500', description: 'Per complete outfit', emoji: '✨' }
+    { value: 'under-50', label: 'Under $50', emoji: '💰' },
+    { value: '50-100', label: '$50 - $100', emoji: '💳' },
+    { value: '100-200', label: '$100 - $200', emoji: '💎' },
+    { value: '200-500', label: '$200 - $500', emoji: '👑' },
+    { value: 'over-500', label: 'Over $500', emoji: '✨' }
   ];
 
   const popularBrands = [
@@ -40,36 +41,49 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
     );
   };
 
-  const calculateSize = (weightKg: number, heightCm: number): string => {
-    // Simple size calculation based on BMI and general sizing
+  const calculateSize = (weightLbs: number, feet: number, inches: number, gender: string, age: number): string => {
+    const heightInches = feet * 12 + inches;
+    const heightCm = heightInches * 2.54;
+    const weightKg = weightLbs * 0.453592;
     const bmi = weightKg / Math.pow(heightCm / 100, 2);
     
-    if (bmi < 18.5) return 'XS';
-    if (bmi < 20) return 'S';
-    if (bmi < 24) return 'M';
-    if (bmi < 27) return 'L';
-    if (bmi < 30) return 'XL';
-    return 'XXL';
+    const isMinor = age < 18;
+    let prefix = '';
+    
+    if (isMinor) {
+      prefix = gender === 'boy' ? 'Boys ' : 'Girls ';
+    } else {
+      prefix = gender === 'male' ? 'Mens ' : 'Womens ';
+    }
+    
+    if (bmi < 18.5) return prefix + 'XS';
+    if (bmi < 20) return prefix + 'Small';
+    if (bmi < 24) return prefix + 'Medium';
+    if (bmi < 27) return prefix + 'Large';
+    if (bmi < 30) return prefix + 'XL';
+    return prefix + 'XXL';
   };
 
   const weightNum = parseFloat(weight);
-  const heightNum = parseFloat(height);
-  const calculatedSize = (weightNum > 0 && heightNum > 0) ? calculateSize(weightNum, heightNum) : '';
+  const feetNum = parseFloat(feet);
+  const inchesNum = parseFloat(inches);
+  const calculatedSize = (weightNum > 0 && feetNum > 0 && inchesNum >= 0) ? 
+    calculateSize(weightNum, feetNum, inchesNum, preferences.gender || '', parseInt(preferences.age_range || '0')) : '';
 
   const handleContinue = () => {
-    if (budget && weightNum > 0 && heightNum > 0) {
+    if (budget && weightNum > 0 && feetNum > 0 && inchesNum >= 0) {
       onComplete({
         ...preferences,
         budget,
         size: calculatedSize,
         brands,
         weight: weightNum,
-        height: heightNum
+        height: feetNum * 12 + inchesNum // Store total height in inches
       });
     }
   };
 
-  const canContinue = budget && weightNum > 0 && heightNum > 0;
+  const canContinue = budget && weightNum > 0 && feetNum > 0 && inchesNum >= 0;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -95,8 +109,8 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
-              <CardTitle className="text-xl text-slate-900">What's your budget for a complete outfit?</CardTitle>
-              <p className="text-sm text-slate-600 mt-2">This includes all pieces (top, bottom, shoes, accessories)</p>
+              <CardTitle className="text-xl text-slate-900">What's your budget?</CardTitle>
+              <p className="text-sm text-slate-600 mt-2">Per complete outfit (top, bottom, shoes, accessories)</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -117,8 +131,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
                     >
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl mb-2">{option.emoji}</div>
-                        <div className="font-medium text-slate-900 text-sm mb-1">{option.label}</div>
-                        <div className="text-xs text-slate-500">{option.description}</div>
+                        <div className="font-medium text-slate-900 text-sm">{option.label}</div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -143,34 +156,49 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
               <p className="text-sm text-slate-600 mt-2">We'll calculate your size automatically</p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-md mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-lg mx-auto">
                 <div className="space-y-2">
                   <Label htmlFor="weight" className="text-sm font-medium text-slate-700">
-                    Weight (kg)
+                    Weight (lbs)
                   </Label>
                   <Input
                     id="weight"
                     type="number"
-                    min="30"
-                    max="200"
+                    min="50"
+                    max="400"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
-                    placeholder="e.g. 70"
+                    placeholder="e.g. 140"
                     className="h-12 text-center"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="height" className="text-sm font-medium text-slate-700">
-                    Height (cm)
+                  <Label htmlFor="feet" className="text-sm font-medium text-slate-700">
+                    Height (ft)
                   </Label>
                   <Input
-                    id="height"
+                    id="feet"
                     type="number"
-                    min="120"
-                    max="220"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    placeholder="e.g. 175"
+                    min="3"
+                    max="8"
+                    value={feet}
+                    onChange={(e) => setFeet(e.target.value)}
+                    placeholder="e.g. 5"
+                    className="h-12 text-center"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inches" className="text-sm font-medium text-slate-700">
+                    Height (in)
+                  </Label>
+                  <Input
+                    id="inches"
+                    type="number"
+                    min="0"
+                    max="11"
+                    value={inches}
+                    onChange={(e) => setInches(e.target.value)}
+                    placeholder="e.g. 6"
                     className="h-12 text-center"
                   />
                 </div>

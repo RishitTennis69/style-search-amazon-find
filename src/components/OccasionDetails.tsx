@@ -3,55 +3,53 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { OccasionDetails as OccasionDetailsType } from "@/types/preferences";
-import { ArrowRight, Calendar, Sun, Activity, MessageSquare } from "lucide-react";
+import { ArrowRight, Calendar, Sun } from "lucide-react";
 
 interface OccasionDetailsProps {
-  onComplete: (details: OccasionDetailsType) => void;
+  onComplete: (occasion: OccasionDetailsType) => void;
 }
 
 const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
   const [occasion, setOccasion] = useState<string>('');
   const [season, setSeason] = useState<string>('');
-  const [activityType, setActivityType] = useState<string>('');
   const [specificNeeds, setSpecificNeeds] = useState<string>('');
 
-  const occasions = [
-    { value: 'work', label: 'Work/Professional', emoji: '💼' },
-    { value: 'casual', label: 'Casual/Everyday', emoji: '👕' },
-    { value: 'date', label: 'Date Night', emoji: '💕' },
-    { value: 'party', label: 'Party/Event', emoji: '🎉' },
-    { value: 'travel', label: 'Travel', emoji: '✈️' },
-    { value: 'workout', label: 'Workout/Sports', emoji: '🏃' }
+  const occasionOptions = [
+    { value: 'work', label: 'Work', emoji: '💼', indoor: true },
+    { value: 'casual', label: 'Casual Day', emoji: '👕', indoor: false },
+    { value: 'date', label: 'Date Night', emoji: '💕', indoor: false },
+    { value: 'party', label: 'Party', emoji: '🎉', indoor: true },
+    { value: 'formal', label: 'Formal Event', emoji: '🎩', indoor: true },
+    { value: 'workout', label: 'Workout', emoji: '💪', indoor: true },
+    { value: 'travel', label: 'Travel', emoji: '✈️', indoor: false },
+    { value: 'shopping', label: 'Shopping', emoji: '🛍️', indoor: false }
   ];
 
-  const seasons = [
+  const seasonOptions = [
     { value: 'spring', label: 'Spring', emoji: '🌸' },
     { value: 'summer', label: 'Summer', emoji: '☀️' },
     { value: 'fall', label: 'Fall', emoji: '🍂' },
     { value: 'winter', label: 'Winter', emoji: '❄️' }
   ];
 
-  const activities = [
-    { value: 'indoor', label: 'Indoor', emoji: '🏠' },
-    { value: 'outdoor', label: 'Outdoor', emoji: '🌳' },
-    { value: 'active', label: 'Active/Sports', emoji: '⚡' },
-    { value: 'formal', label: 'Formal', emoji: '🎩' },
-    { value: 'relaxed', label: 'Relaxed', emoji: '😌' }
-  ];
+  const selectedOccasion = occasionOptions.find(opt => opt.value === occasion);
+  const isIndoorOccasion = selectedOccasion?.indoor || false;
 
   const handleContinue = () => {
-    if (occasion && season && activityType) {
+    if (occasion && (isIndoorOccasion || season)) {
       onComplete({
         occasion,
-        season,
-        activity_type: activityType,
+        season: isIndoorOccasion ? 'indoor' : season,
+        activity_type: '',
         specific_needs: specificNeeds
       });
     }
   };
 
-  const canContinue = occasion && season && activityType;
+  const canContinue = occasion && (isIndoorOccasion || season);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -61,8 +59,8 @@ const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
         transition={{ duration: 0.5 }}
         className="text-center mb-12"
       >
-        <h2 className="text-3xl font-bold text-slate-900 mb-4">What's the occasion?</h2>
-        <p className="text-lg text-slate-600">Tell us about the event so we can find perfect outfits</p>
+        <h2 className="text-3xl font-bold text-slate-900 mb-4">What's the Occasion?</h2>
+        <p className="text-lg text-slate-600">Tell us where you're going and we'll find the perfect outfit</p>
       </motion.div>
 
       <div className="space-y-8">
@@ -72,33 +70,33 @@ const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-xl text-slate-900">What's the occasion?</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {occasions.map((occ, index) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {occasionOptions.map((option, index) => (
                   <motion.div
-                    key={occ.value}
+                    key={option.value}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 + index * 0.1, duration: 0.3 }}
                   >
                     <Card 
                       className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
-                        occasion === occ.value 
-                          ? 'ring-2 ring-purple-500 bg-purple-50 border-purple-200' 
+                        occasion === option.value 
+                          ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200' 
                           : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
                       }`}
-                      onClick={() => setOccasion(occ.value)}
+                      onClick={() => setOccasion(option.value)}
                     >
                       <CardContent className="p-4 text-center">
-                        <div className="text-2xl mb-2">{occ.emoji}</div>
-                        <div className="font-medium text-slate-900 text-sm">{occ.label}</div>
+                        <div className="text-2xl mb-2">{option.emoji}</div>
+                        <div className="font-medium text-slate-900 text-sm">{option.label}</div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -108,85 +106,87 @@ const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
           </Card>
         </motion.div>
 
-        {/* Season Selection */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-            <CardHeader className="text-center pb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sun className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-xl text-slate-900">What season?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {seasons.map((seas, index) => (
-                  <motion.div
-                    key={seas.value}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
-                  >
-                    <Card 
-                      className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
-                        season === seas.value 
-                          ? 'ring-2 ring-orange-500 bg-orange-50 border-orange-200' 
-                          : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
-                      }`}
-                      onClick={() => setSeason(seas.value)}
+        {/* Season Selection - Only show if outdoor occasion */}
+        {occasion && !isIndoorOccasion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="text-center pb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sun className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-xl text-slate-900">What season is it?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {seasonOptions.map((option, index) => (
+                    <motion.div
+                      key={option.value}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
                     >
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl mb-2">{seas.emoji}</div>
-                        <div className="font-medium text-slate-900">{seas.label}</div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                      <Card 
+                        className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+                          season === option.value 
+                            ? 'ring-2 ring-orange-500 bg-orange-50 border-orange-200' 
+                            : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                        }`}
+                        onClick={() => setSeason(option.value)}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl mb-2">{option.emoji}</div>
+                          <div className="font-medium text-slate-900 text-sm">{option.label}</div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-        {/* Activity Type */}
+        {/* Indoor Notice */}
+        {occasion && isIndoorOccasion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="text-center"
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <span className="text-blue-700 font-medium">Indoor occasion - season doesn't matter! 🏢</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Specific Needs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-xl text-slate-900">Activity type?</CardTitle>
+              <CardTitle className="text-xl text-slate-900">Any specific requirements? (Optional)</CardTitle>
+              <p className="text-sm text-slate-600 mt-2">e.g., "need to look professional", "comfortable for walking", etc.</p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {activities.map((activity, index) => (
-                  <motion.div
-                    key={activity.value}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.7 + index * 0.1, duration: 0.3 }}
-                  >
-                    <Card 
-                      className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
-                        activityType === activity.value 
-                          ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200' 
-                          : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
-                      }`}
-                      onClick={() => setActivityType(activity.value)}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl mb-2">{activity.emoji}</div>
-                        <div className="font-medium text-slate-900 text-sm">{activity.label}</div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+              <div className="max-w-md mx-auto">
+                <Label htmlFor="specific-needs" className="text-sm font-medium text-slate-700">
+                  Specific Needs
+                </Label>
+                <Input
+                  id="specific-needs"
+                  value={specificNeeds}
+                  onChange={(e) => setSpecificNeeds(e.target.value)}
+                  placeholder="Any special requirements..."
+                  className="h-12 mt-2"
+                />
               </div>
             </CardContent>
           </Card>
@@ -210,7 +210,7 @@ const OccasionDetails = ({ onComplete }: OccasionDetailsProps) => {
               : 'bg-slate-200 text-slate-400 cursor-not-allowed'
           }`}
         >
-          Get My Recommendations
+          Find My Perfect Outfit
           <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
       </motion.div>
