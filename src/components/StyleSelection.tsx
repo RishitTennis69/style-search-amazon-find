@@ -42,10 +42,12 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
   };
 
   const calculateSize = (weightLbs: number, feet: number, inches: number, gender: string, age: number): string => {
-    const heightInches = feet * 12 + inches;
-    const heightCm = heightInches * 2.54;
+    const totalHeightInches = feet * 12 + inches;
+    const heightCm = totalHeightInches * 2.54;
     const weightKg = weightLbs * 0.453592;
     const bmi = weightKg / Math.pow(heightCm / 100, 2);
+    
+    console.log('Size calculation:', { weightLbs, feet, inches, totalHeightInches, bmi, gender, age });
     
     const isMinor = age < 18;
     let prefix = '';
@@ -56,12 +58,34 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
       prefix = gender === 'male' ? 'Mens ' : 'Womens ';
     }
     
-    if (bmi < 18.5) return prefix + 'XS';
-    if (bmi < 20) return prefix + 'Small';
-    if (bmi < 24) return prefix + 'Medium';
-    if (bmi < 27) return prefix + 'Large';
-    if (bmi < 30) return prefix + 'XL';
-    return prefix + 'XXL';
+    // More realistic size mapping based on BMI and height
+    if (isMinor) {
+      // For children/teens, consider both BMI and height more carefully
+      if (totalHeightInches < 48) return prefix + 'XS'; // Under 4 feet
+      if (totalHeightInches < 54) return prefix + 'Small'; // 4-4.5 feet
+      if (totalHeightInches < 60) return prefix + 'Medium'; // 4.5-5 feet
+      if (totalHeightInches < 66) return prefix + 'Large'; // 5-5.5 feet
+      return prefix + 'XL'; // Over 5.5 feet
+    } else {
+      // For adults, use a combination of BMI and height
+      if (bmi < 18.5) {
+        if (totalHeightInches < 64) return prefix + 'XS';
+        if (totalHeightInches < 68) return prefix + 'Small';
+        return prefix + 'Medium';
+      }
+      if (bmi < 22) {
+        if (totalHeightInches < 64) return prefix + 'Small';
+        if (totalHeightInches < 70) return prefix + 'Medium';
+        return prefix + 'Large';
+      }
+      if (bmi < 25) {
+        if (totalHeightInches < 66) return prefix + 'Medium';
+        return prefix + 'Large';
+      }
+      if (bmi < 28) return prefix + 'Large';
+      if (bmi < 32) return prefix + 'XL';
+      return prefix + 'XXL';
+    }
   };
 
   const weightNum = parseFloat(weight);
@@ -110,7 +134,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-xl text-slate-900">What's your budget?</CardTitle>
-              <p className="text-sm text-slate-600 mt-2">Per complete outfit (top, bottom, shoes, accessories)</p>
+              <p className="text-sm text-slate-600 mt-2">Per complete outfit</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -159,7 +183,7 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-lg mx-auto">
                 <div className="space-y-2">
                   <Label htmlFor="weight" className="text-sm font-medium text-slate-700">
-                    Weight (lbs)
+                    Weight (pounds)
                   </Label>
                   <Input
                     id="weight"
