@@ -1,38 +1,22 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Sparkles, ArrowRight, Search, User, Calendar, ShoppingBag, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import StylePreferences from "@/components/StylePreferences";
-import OccasionForm from "@/components/OccasionForm";
+import AgeGenderSelector from "@/components/AgeGenderSelector";
+import OutfitStyleSelector from "@/components/OutfitStyleSelector";
+import SimplifiedOccasionForm from "@/components/SimplifiedOccasionForm";
 import FashionResults from "@/components/FashionResults";
-
-export interface UserPreferences {
-  style: string[];
-  colors: string[];
-  budget: string;
-  size: string;
-  brands: string[];
-}
-
-export interface OccasionDetails {
-  occasion: string;
-  season: string;
-  timeOfDay: string;
-  formality: string;
-  specificNeeds: string;
-}
+import { UserPreferences, OccasionDetails } from "@/types/preferences";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
-    style: [],
-    colors: [],
+    age_range: '',
+    gender: '',
     budget: '',
     size: '',
     brands: []
@@ -40,9 +24,8 @@ const Index = () => {
   const [occasionDetails, setOccasionDetails] = useState<OccasionDetails>({
     occasion: '',
     season: '',
-    timeOfDay: '',
-    formality: '',
-    specificNeeds: ''
+    activity_type: '',
+    specific_needs: ''
   });
 
   useEffect(() => {
@@ -65,30 +48,40 @@ const Index = () => {
   }
 
   if (!user) {
-    return null; // Will redirect to auth page
+    return null;
   }
 
   const steps = [
-    { title: "Style Preferences", icon: User, description: "Tell us about your fashion taste" },
-    { title: "Occasion Details", icon: Calendar, description: "What's the occasion today?" },
+    { title: "Age & Gender", icon: User, description: "Tell us about yourself" },
+    { title: "Style Preferences", icon: Sparkles, description: "Choose your favorite looks" },
+    { title: "Occasion Details", icon: Calendar, description: "What's the occasion?" },
     { title: "Find Your Look", icon: Search, description: "Discover perfect outfits" }
   ];
 
-  const handleStyleSubmit = (preferences: UserPreferences) => {
-    setUserPreferences(preferences);
+  const handleAgeGenderSubmit = (ageRange: string, gender: string) => {
+    setUserPreferences(prev => ({ ...prev, age_range: ageRange, gender }));
     setCurrentStep(1);
+  };
+
+  const handleStyleSubmit = (selectedDescription: string, selectedImages: string[]) => {
+    setUserPreferences(prev => ({ 
+      ...prev, 
+      confirmed_style_description: selectedDescription,
+      selected_outfit_images: selectedImages
+    }));
+    setCurrentStep(2);
   };
 
   const handleOccasionSubmit = (details: OccasionDetails) => {
     setOccasionDetails(details);
-    setCurrentStep(2);
+    setCurrentStep(3);
   };
 
   const resetForm = () => {
     setCurrentStep(0);
     setUserPreferences({
-      style: [],
-      colors: [],
+      age_range: '',
+      gender: '',
       budget: '',
       size: '',
       brands: []
@@ -96,9 +89,8 @@ const Index = () => {
     setOccasionDetails({
       occasion: '',
       season: '',
-      timeOfDay: '',
-      formality: '',
-      specificNeeds: ''
+      activity_type: '',
+      specific_needs: ''
     });
   };
 
@@ -147,9 +139,7 @@ const Index = () => {
 
               {/* User Menu */}
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">
-                  Welcome back!
-                </span>
+                <span className="text-sm text-slate-600">Welcome back!</span>
                 <Button
                   onClick={handleSignOut}
                   variant="outline"
@@ -171,13 +161,13 @@ const Index = () => {
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                Discover Your Perfect Style
+                Let's Get Started
               </h2>
               <p className="text-xl text-slate-600 leading-relaxed">
-                Tell us about your fashion preferences, and we'll help you find the perfect outfit from Amazon's vast collection.
+                First, tell us a bit about yourself so we can show you the most relevant style options.
               </p>
             </div>
-            <StylePreferences onSubmit={handleStyleSubmit} />
+            <AgeGenderSelector onSubmit={handleAgeGenderSubmit} />
           </div>
         )}
 
@@ -185,14 +175,16 @@ const Index = () => {
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-4xl font-bold text-slate-800 mb-4">
-                What's the Occasion?
+                Discover Your Style
               </h2>
               <p className="text-xl text-slate-600 leading-relaxed">
-                Help us understand the context so we can recommend the most appropriate outfits.
+                Choose the outfits you love, and our AI will understand your unique style preferences.
               </p>
             </div>
-            <OccasionForm 
-              onSubmit={handleOccasionSubmit}
+            <OutfitStyleSelector 
+              ageRange={userPreferences.age_range}
+              gender={userPreferences.gender}
+              onSubmit={handleStyleSubmit}
               onBack={() => setCurrentStep(0)}
             />
           </div>
@@ -202,10 +194,27 @@ const Index = () => {
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-4xl font-bold text-slate-800 mb-4">
+                What's the Occasion?
+              </h2>
+              <p className="text-xl text-slate-600 leading-relaxed">
+                Help us understand the context so we can recommend the most appropriate outfits.
+              </p>
+            </div>
+            <SimplifiedOccasionForm 
+              onSubmit={handleOccasionSubmit}
+              onBack={() => setCurrentStep(1)}
+            />
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">
                 Your Perfect Matches
               </h2>
               <p className="text-xl text-slate-600 leading-relaxed">
-                Based on your preferences, here are curated outfit recommendations from Amazon.
+                Based on your style and occasion, here are curated outfit recommendations from Amazon.
               </p>
             </div>
             <FashionResults 

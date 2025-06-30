@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      outfit_suggestions: {
+        Row: {
+          age_range: string
+          ai_descriptions: string[]
+          created_at: string
+          gender: string
+          id: string
+          outfit_images: string[]
+          selected_description: string | null
+          user_id: string
+        }
+        Insert: {
+          age_range: string
+          ai_descriptions: string[]
+          created_at?: string
+          gender: string
+          id?: string
+          outfit_images: string[]
+          selected_description?: string | null
+          user_id: string
+        }
+        Update: {
+          age_range?: string
+          ai_descriptions?: string[]
+          created_at?: string
+          gender?: string
+          id?: string
+          outfit_images?: string[]
+          selected_description?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -32,71 +65,77 @@ export type Database = {
       }
       search_history: {
         Row: {
+          activity_type: string | null
           created_at: string
-          formality: string
           id: string
           occasion: string
           preferences: Json
           season: string
           specific_needs: string | null
-          time_of_day: string
+          style_description: string | null
           user_id: string
         }
         Insert: {
+          activity_type?: string | null
           created_at?: string
-          formality: string
           id?: string
           occasion: string
           preferences: Json
           season: string
           specific_needs?: string | null
-          time_of_day: string
+          style_description?: string | null
           user_id: string
         }
         Update: {
+          activity_type?: string | null
           created_at?: string
-          formality?: string
           id?: string
           occasion?: string
           preferences?: Json
           season?: string
           specific_needs?: string | null
-          time_of_day?: string
+          style_description?: string | null
           user_id?: string
         }
         Relationships: []
       }
       user_preferences: {
         Row: {
+          age_range: string | null
           brands: string[]
           budget: string | null
-          colors: string[]
+          confirmed_style_description: string | null
           created_at: string
+          gender: string | null
           id: string
+          selected_outfit_images: string[] | null
           size: string | null
-          style: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          age_range?: string | null
           brands?: string[]
           budget?: string | null
-          colors?: string[]
+          confirmed_style_description?: string | null
           created_at?: string
+          gender?: string | null
           id?: string
+          selected_outfit_images?: string[] | null
           size?: string | null
-          style?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          age_range?: string | null
           brands?: string[]
           budget?: string | null
-          colors?: string[]
+          confirmed_style_description?: string | null
           created_at?: string
+          gender?: string | null
           id?: string
+          selected_outfit_images?: string[] | null
           size?: string | null
-          style?: string[]
           updated_at?: string
           user_id?: string
         }
