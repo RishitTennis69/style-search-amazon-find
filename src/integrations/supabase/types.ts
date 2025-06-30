@@ -9,7 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          created_at: string
+          formality: string
+          id: string
+          occasion: string
+          preferences: Json
+          season: string
+          specific_needs: string | null
+          time_of_day: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          formality: string
+          id?: string
+          occasion: string
+          preferences: Json
+          season: string
+          specific_needs?: string | null
+          time_of_day: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          formality?: string
+          id?: string
+          occasion?: string
+          preferences?: Json
+          season?: string
+          specific_needs?: string | null
+          time_of_day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          brands: string[]
+          budget: string | null
+          colors: string[]
+          created_at: string
+          id: string
+          size: string | null
+          style: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brands?: string[]
+          budget?: string | null
+          colors?: string[]
+          created_at?: string
+          id?: string
+          size?: string | null
+          style?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brands?: string[]
+          budget?: string | null
+          colors?: string[]
+          created_at?: string
+          id?: string
+          size?: string | null
+          style?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
