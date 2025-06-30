@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, ArrowLeft, Calendar, Sun, Clock, Briefcase } from "lucide-react";
+import { ArrowRight, ArrowLeft, Calendar, Sun, Activity } from "lucide-react";
 import { OccasionDetails } from "@/types/preferences";
 
 interface OccasionFormProps {
@@ -15,24 +16,20 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
   const [details, setDetails] = useState<OccasionDetails>({
     occasion: '',
     season: '',
-    timeOfDay: '',
-    formality: '',
-    specificNeeds: ''
+    activity_type: '',
+    specific_needs: ''
   });
 
   const occasionOptions = [
     'Work/Office', 'Date Night', 'Casual Outing', 'Wedding', 'Party',
-    'Interview', 'Travel', 'Shopping', 'Dinner', 'Weekend Relaxing',
-    'Gym/Sports', 'Beach/Pool', 'Concert/Event', 'Meeting Friends'
+    'Interview', 'Travel', 'Shopping', 'Dinner', 'Weekend Relaxing'
   ];
 
   const seasonOptions = ['Spring', 'Summer', 'Fall', 'Winter'];
 
-  const timeOptions = ['Morning', 'Afternoon', 'Evening', 'Night'];
-
-  const formalityOptions = [
-    'Very Casual', 'Casual', 'Smart Casual', 'Business Casual', 
-    'Semi-Formal', 'Formal', 'Black Tie'
+  const activityOptions = [
+    'Mostly Sitting', 'Walking Around', 'Active/Sporty', 'Dancing', 
+    'Outdoor Activities', 'Indoor Events'
   ];
 
   const handleOptionSelect = (field: keyof OccasionDetails, value: string) => {
@@ -40,12 +37,12 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
   };
 
   const handleSubmit = () => {
-    if (details.occasion && details.season && details.timeOfDay && details.formality) {
+    if (details.occasion && details.season && details.activity_type) {
       onSubmit(details);
     }
   };
 
-  const isValid = details.occasion && details.season && details.timeOfDay && details.formality;
+  const isValid = details.occasion && details.season && details.activity_type;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -58,8 +55,7 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 mb-4">Select the main purpose of your outfit</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {occasionOptions.map(occasion => (
               <Badge
                 key={occasion}
@@ -78,7 +74,7 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
         </CardContent>
       </Card>
 
-      {/* Season and Time */}
+      {/* Season and Activity */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
           <CardHeader>
@@ -110,24 +106,24 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-slate-800">
-              <Clock className="w-5 h-5 text-purple-600" />
-              <span>Time of Day</span>
+              <Activity className="w-5 h-5 text-purple-600" />
+              <span>Activity Level</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {timeOptions.map(time => (
+            <div className="grid grid-cols-1 gap-3">
+              {activityOptions.map(activity => (
                 <Badge
-                  key={time}
-                  variant={details.timeOfDay === time ? "default" : "outline"}
-                  className={`cursor-pointer p-4 text-center justify-center transition-all duration-200 hover:scale-105 ${
-                    details.timeOfDay === time
+                  key={activity}
+                  variant={details.activity_type === activity ? "default" : "outline"}
+                  className={`cursor-pointer p-3 text-center justify-center transition-all duration-200 hover:scale-105 ${
+                    details.activity_type === activity
                       ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                       : 'hover:bg-slate-100'
                   }`}
-                  onClick={() => handleOptionSelect('timeOfDay', time)}
+                  onClick={() => handleOptionSelect('activity_type', activity)}
                 >
-                  {time}
+                  {activity}
                 </Badge>
               ))}
             </div>
@@ -135,49 +131,17 @@ const OccasionForm = ({ onSubmit, onBack }: OccasionFormProps) => {
         </Card>
       </div>
 
-      {/* Formality Level */}
-      <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-slate-800">
-            <Briefcase className="w-5 h-5 text-indigo-600" />
-            <span>Formality Level</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-slate-600 mb-4">How formal should your outfit be?</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {formalityOptions.map(formality => (
-              <Badge
-                key={formality}
-                variant={details.formality === formality ? "default" : "outline"}
-                className={`cursor-pointer p-3 text-center justify-center transition-all duration-200 hover:scale-105 ${
-                  details.formality === formality
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                    : 'hover:bg-slate-100'
-                }`}
-                onClick={() => handleOptionSelect('formality', formality)}
-              >
-                {formality}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Specific Needs */}
       <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-slate-800">Any Specific Needs or Preferences?</CardTitle>
+          <CardTitle className="text-slate-800">Any Specific Needs?</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 mb-4">
-            Tell us about any specific requirements, comfort needs, or style details (optional)
-          </p>
           <Textarea
-            placeholder="e.g., need comfortable shoes for walking, prefer breathable fabrics, want to stand out, need professional look, etc."
-            value={details.specificNeeds}
-            onChange={(e) => setDetails(prev => ({ ...prev, specificNeeds: e.target.value }))}
-            className="min-h-[100px] resize-none"
+            placeholder="e.g., need comfortable shoes, prefer breathable fabrics, want to stand out, etc."
+            value={details.specific_needs}
+            onChange={(e) => setDetails(prev => ({ ...prev, specific_needs: e.target.value }))}
+            className="min-h-[80px] resize-none"
           />
         </CardContent>
       </Card>
