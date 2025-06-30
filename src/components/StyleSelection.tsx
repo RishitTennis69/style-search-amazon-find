@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -43,11 +42,8 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
 
   const calculateSize = (weightLbs: number, feet: number, inches: number, gender: string, age: number): string => {
     const totalHeightInches = feet * 12 + inches;
-    const heightCm = totalHeightInches * 2.54;
-    const weightKg = weightLbs * 0.453592;
-    const bmi = weightKg / Math.pow(heightCm / 100, 2);
     
-    console.log('Size calculation:', { weightLbs, feet, inches, totalHeightInches, bmi, gender, age });
+    console.log('Size calculation:', { weightLbs, feet, inches, totalHeightInches, gender, age });
     
     const isMinor = age < 18;
     let prefix = '';
@@ -58,33 +54,37 @@ const StyleSelection = ({ preferences, onComplete }: StyleSelectionProps) => {
       prefix = gender === 'male' ? 'Mens ' : 'Womens ';
     }
     
-    // More realistic size mapping based on BMI and height
+    // Simple size mapping based on height and weight ranges
     if (isMinor) {
-      // For children/teens, consider both BMI and height more carefully
+      // For children/teens
       if (totalHeightInches < 48) return prefix + 'XS'; // Under 4 feet
       if (totalHeightInches < 54) return prefix + 'Small'; // 4-4.5 feet
       if (totalHeightInches < 60) return prefix + 'Medium'; // 4.5-5 feet
       if (totalHeightInches < 66) return prefix + 'Large'; // 5-5.5 feet
       return prefix + 'XL'; // Over 5.5 feet
     } else {
-      // For adults, use a combination of BMI and height
-      if (bmi < 18.5) {
-        if (totalHeightInches < 64) return prefix + 'XS';
-        if (totalHeightInches < 68) return prefix + 'Small';
+      // For adults - consider both height and weight
+      if (totalHeightInches < 60) { // Under 5 feet
+        if (weightLbs < 110) return prefix + 'XS';
+        if (weightLbs < 130) return prefix + 'Small';
         return prefix + 'Medium';
+      } else if (totalHeightInches < 66) { // 5-5.5 feet
+        if (weightLbs < 120) return prefix + 'Small';
+        if (weightLbs < 150) return prefix + 'Medium';
+        if (weightLbs < 180) return prefix + 'Large';
+        return prefix + 'XL';
+      } else if (totalHeightInches < 72) { // 5.5-6 feet
+        if (weightLbs < 130) return prefix + 'Small';
+        if (weightLbs < 160) return prefix + 'Medium';
+        if (weightLbs < 200) return prefix + 'Large';
+        if (weightLbs < 240) return prefix + 'XL';
+        return prefix + 'XXL';
+      } else { // Over 6 feet
+        if (weightLbs < 150) return prefix + 'Medium';
+        if (weightLbs < 180) return prefix + 'Large';
+        if (weightLbs < 220) return prefix + 'XL';
+        return prefix + 'XXL';
       }
-      if (bmi < 22) {
-        if (totalHeightInches < 64) return prefix + 'Small';
-        if (totalHeightInches < 70) return prefix + 'Medium';
-        return prefix + 'Large';
-      }
-      if (bmi < 25) {
-        if (totalHeightInches < 66) return prefix + 'Medium';
-        return prefix + 'Large';
-      }
-      if (bmi < 28) return prefix + 'Large';
-      if (bmi < 32) return prefix + 'XL';
-      return prefix + 'XXL';
     }
   };
 
